@@ -84,16 +84,35 @@ TEST_CASE(transient_solver_rejects_invalid_time_config) {
     EXPECT_EQ(zero_stop.errors.size(), 1U);
 }
 
-TEST_CASE(transient_solver_rejects_inductors_for_now) {
+TEST_CASE(transient_solver_simulates_rl_decay) {
     const auto circuit = parse_transient_circuit(
         "V1 in 0 5\n"
-        "L1 in 0 1u\n");
+        "R1 in out 10\n"
+        "L1 out 0 1m\n");
 
     const TransientSolver solver;
-    const auto result = solver.solve(circuit, TransientAnalysisConfig{.time_step = 1e-4, .stop_time = 1e-3});
+    const auto result = solver.solve(circuit, TransientAnalysisConfig{.time_step = 1e-5, .stop_time = 5e-4});
 
-    EXPECT_FALSE(result.ok());
-    EXPECT_EQ(result.errors.size(), 1U);
+    EXPECT_TRUE(result.ok());
+    const auto& samples = result.node_voltages.at("out");
+    EXPECT_TRUE(samples.front() > 4.0);
+    EXPECT_TRUE(samples.back() < 0.1);
+}
+
+TEST_CASE(transient_solver_rl_response_is_monotonic_for_step_case) {
+    const auto circuit = parse_transient_circuit(
+        "V1 in 0 5\n"
+        "R1 in out 10\n"
+        "L1 out 0 1m\n");
+
+    const TransientSolver solver;
+    const auto result = solver.solve(circuit, TransientAnalysisConfig{.time_step = 1e-5, .stop_time = 3e-4});
+
+    EXPECT_TRUE(result.ok());
+    const auto& samples = result.node_voltages.at("out");
+    for (std::size_t index = 1; index < samples.size(); ++index) {
+        EXPECT_TRUE(samples[index] <= samples[index - 1]);
+    }
 }
 
 TEST_CASE(transient_solver_rejects_missing_ground) {

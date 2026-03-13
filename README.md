@@ -6,7 +6,7 @@ CircuitSim is a simulation-first circuit analysis and design exploration tool bu
 
 - SPICE-like netlist parsing and validation
 - DC operating point analysis
-- transient RC simulation
+- transient RC and RL simulation
 - AC small-signal analysis for linear RC circuits
 - Python bindings for direct scripting
 - parameter sweeps with JSON export and plotting
@@ -61,7 +61,7 @@ Completed or mostly completed:
 - repository setup and test scaffolding
 - netlist parser and circuit graph
 - DC solver
-- transient RC solver
+- transient RC and RL solver
 - Python automation layer
 - parameter sweeps and experiment runner
 - diagnostics and workflow reporting
