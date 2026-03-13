@@ -26,6 +26,18 @@ else()
     target_compile_options(circuitsim PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
+add_executable(circuitsim_cli
+    src/main.cpp
+)
+
+target_link_libraries(circuitsim_cli PRIVATE circuitsim)
+
+if(MSVC)
+    target_compile_options(circuitsim_cli PRIVATE /W4 /permissive-)
+else()
+    target_compile_options(circuitsim_cli PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
 if(CIRCUITSIM_BUILD_TESTS)
     enable_testing()
 
@@ -45,4 +57,13 @@ if(CIRCUITSIM_BUILD_TESTS)
     endif()
 
     add_test(NAME circuitsim_tests COMMAND circuitsim_tests)
+    add_test(
+        NAME circuitsim_cli_resistor_divider
+        COMMAND circuitsim_cli ${PROJECT_SOURCE_DIR}/examples/resistor_divider.cir
+    )
+    set_tests_properties(
+        circuitsim_cli_resistor_divider
+        PROPERTIES
+        PASS_REGULAR_EXPRESSION "out = 3.333333"
+    )
 endif()

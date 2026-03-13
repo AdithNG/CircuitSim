@@ -38,7 +38,14 @@ Stretch goals:
 
 ## Project Status
 
-The repository is in active early development. The current focus is building a solid parser and test harness before moving into solver work.
+The repository is in active early development.
+
+Implemented so far:
+
+- SPICE-like netlist parsing and validation
+- DC operating point solving for resistors, current sources, and voltage sources
+- a small CLI for running DC analysis on a netlist file
+- automated tests and CI
 
 ## Repository Layout
 
@@ -60,6 +67,20 @@ CircuitSim/
 - Prefer correctness and diagnostics before optimization
 - Keep the core architecture clean and extensible
 - Add tests for both successful and failure cases
+
+## Build And Test
+
+```bash
+cmake -S . -B build
+cmake --build build --config Debug
+ctest --test-dir build -C Debug --output-on-failure
+```
+
+## Run The CLI
+
+```bash
+./build/Debug/circuitsim_cli examples/resistor_divider.cir
+```
 
 ## Roadmap
 
