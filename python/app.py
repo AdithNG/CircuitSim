@@ -123,15 +123,18 @@ def render_diagnostic_messages(messages: list[dict]):
         st.success("No diagnostics to report.")
         return
 
+    errors = [message for message in messages if message["severity"] == "error"]
+    warnings = [message for message in messages if message["severity"] != "error"]
+
+    if errors:
+        st.error(f"{len(errors)} blocking issue(s) found.")
+    elif warnings:
+        st.warning(f"{len(warnings)} warning(s) found.")
+
+    st.markdown("**Issues**")
     for message in messages:
         title = format_diagnostic_title(message)
-        body = message["message"]
-        severity = message["severity"]
-
-        if severity == "error":
-            st.error(f"{title}: {body}")
-        else:
-            st.warning(f"{title}: {body}")
+        st.markdown(f"- **{title}**: {message['message']}")
 
     with st.expander("Raw diagnostic data"):
         st.json(messages)
@@ -265,13 +268,13 @@ def render_diagnostics_tab(circuitsim_py):
     if st.button("Analyze netlist", key="run_diag"):
         result = circuitsim_py.diagnose_netlist(netlist)
         if result["has_errors"]:
-            st.error("Diagnostics found blocking issues.")
+            st.caption("Review the issues below and update the netlist before running analyses.")
         else:
             st.success("No blocking issues found.")
         render_diagnostic_messages(result["messages"])
         suggestions = guidance_for_messages(result["messages"])
         if suggestions:
-            st.info("Suggested next steps:")
+            st.markdown("**Suggested next steps**")
             for suggestion in suggestions:
                 st.markdown(f"- {suggestion}")
 
