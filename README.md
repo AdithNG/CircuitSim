@@ -1,17 +1,25 @@
 # CircuitSim
 
-CircuitSim is a simulation-first circuit analysis and design exploration tool aimed at EDA, semiconductor, and systems software roles. It combines a C++ solver core with a Python automation layer and a Streamlit UI for interactive demos.
+CircuitSim is a simulation-first circuit analysis and design exploration tool built for EDA, semiconductor, and systems software workflows. It combines a C++ solver core with Python bindings, scripting utilities, and a Streamlit workbench for interactive use.
+
+## Features
+
+- SPICE-like netlist parsing and validation
+- DC operating point analysis
+- transient RC simulation
+- AC small-signal analysis for linear RC circuits
+- Python bindings for direct scripting
+- parameter sweeps with JSON export and plotting
+- topology diagnostics for common netlist issues
+- a chip-focused interconnect showcase
+- automated tests and GitHub Actions CI
 
 ## Quick Start
 
-The main way to use this project is through the Streamlit app.
-
-Install Python dependencies, build the C++ extension once, then launch the app:
+Install dependencies and launch the app:
 
 ```bash
 python -m pip install -r requirements.txt
-cmake -S . -B build
-cmake --build build --config Debug
 make ui
 ```
 
@@ -21,61 +29,32 @@ Then open:
 http://localhost:8501
 ```
 
-## Important Note
+`make ui` handles CMake configure/build automatically through the `Makefile`, so the CMake commands do not need to be run separately for normal app usage.
 
-The app is written in Python, but it still depends on the compiled C++ backend.
+## How It Works
 
-That means:
+The user-facing app is written in Python, but it depends on a compiled C++ backend.
 
-- you do run a Python app
-- but you still need to build the C++ project first
-- because the UI calls into the compiled `circuitsim_py` extension in `build/python`
-
-So the Python app is the frontend/workflow layer, and the C++ code is the simulation engine underneath it.
-
-## What You Built
-
-CircuitSim currently includes:
-
-- SPICE-like netlist parsing and validation
-- DC operating point solving
-- transient simulation for RC circuits
-- AC small-signal analysis for linear RC circuits
-- Python bindings for the simulation APIs
-- parameterized sweeps with JSON export and plotting
-- diagnostics for missing ground, floating nodes, and reactive-only networks
-- a chip-focused interconnect showcase
-- a Streamlit workbench for interactive use
-- automated tests and GitHub Actions CI
+- The C++ layer implements the parser and solver core.
+- The Python extension module `circuitsim_py` exposes that core to scripts and the UI.
+- The Streamlit app provides the main interactive entry point.
 
 ## Streamlit Workbench
 
 The app lives in [python/app.py](python/app.py).
 
-It currently provides:
+Available views:
 
 - DC analysis
 - transient analysis
 - AC analysis
 - parameter sweeps
 - diagnostics
-- the chip-focused showcase
+- chip showcase
 
-The app auto-detects the built Python extension by default, so you normally do not need to configure any module path manually.
-
-## What This Project Demonstrates
-
-CircuitSim is designed to show strength in:
-
-- numerical methods and matrix-based simulation
-- parser and intermediate-representation design
-- performance-conscious C++ engineering
-- Python and C++ interoperability
-- tooling and workflow design for technical users
+The app auto-detects the built Python extension by default.
 
 ## Project Status
-
-Most of the original planned milestones are complete in a solid first version.
 
 Completed or mostly completed:
 
@@ -88,39 +67,31 @@ Completed or mostly completed:
 - diagnostics and workflow reporting
 - chip-focused showcase example
 - CI and interactive UI
+- AC analysis
 
-Still partial or not done yet:
+Still partial or not implemented:
 
 - RL transient support
 - inductor support in DC, transient, and AC analysis
 - deeper convergence diagnostics
 - richer simulation summaries and metadata
-- performance profiling and optimization pass
+- performance profiling and optimization
 
-## Build And Test
+## Common Commands
 
-```bash
-python -m pip install -r requirements.txt
-cmake -S . -B build
-cmake --build build --config Debug
-ctest --test-dir build -C Debug --output-on-failure
-```
-
-Or with the `Makefile`:
+Run tests:
 
 ```bash
 python -m pip install -r requirements.txt
 make test
 ```
 
-## Other Ways To Run It
-
-Run the CLI directly:
+Run the CLI:
 
 ```bash
-./build/Debug/circuitsim_cli examples/resistor_divider.cir
-./build/Debug/circuitsim_cli tran examples/rc_charge.cir 1e-4 5e-3
-./build/Debug/circuitsim_cli ac examples/ac_lowpass.cir 159154.94309189535
+make run-dc
+make run-tran
+make run-ac
 ```
 
 Run a sweep:
@@ -135,11 +106,19 @@ Run the chip showcase:
 make showcase
 ```
 
+## Manual Build
+
+If you want the lower-level CMake flow directly:
+
+```bash
+python -m pip install -r requirements.txt
+cmake -S . -B build
+cmake --build build --config Debug
+```
+
 ## Python API
 
-After building, the Python extension module is available in `build/python`.
-
-Example:
+After building, the extension module is available in `build/python`.
 
 ```python
 import sys
@@ -164,7 +143,7 @@ Outputs:
 - `plots/chip_showcase_waveforms.png`
 - `plots/chip_showcase_delay.png`
 
-The detailed write-up lives in [docs/chip_showcase.md](docs/chip_showcase.md).
+Additional notes live in [docs/chip_showcase.md](docs/chip_showcase.md).
 
 ## Repository Layout
 
