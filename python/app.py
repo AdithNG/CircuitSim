@@ -35,6 +35,22 @@ def load_example_text(path: Path) -> str:
     return path.read_text()
 
 
+def discover_module_dir() -> Path:
+    candidates = [
+        BUILD_PYTHON,
+        ROOT / "build" / "python" / "Debug",
+    ]
+    for candidate in candidates:
+        if not candidate.exists():
+            continue
+        if any(
+            path.name.startswith("circuitsim_py") and path.suffix in {".pyd", ".so", ".dylib"}
+            for path in candidate.iterdir()
+        ):
+            return candidate
+    return BUILD_PYTHON
+
+
 @st.cache_resource
 def get_circuitsim_module(module_dir: str):
     return load_module(module_dir)
@@ -97,13 +113,51 @@ def run_chip_showcase(circuitsim_py, template_text: str, wire_values: list[float
     return results
 
 
+def format_diagnostic_title(message: dict) -> str:
+    code = message["code"].replace("-", " ").replace("_", " ").title()
+    return f"{code}"
+
+
+def render_diagnostic_messages(messages: list[dict]):
+    if not messages:
+        st.success("No diagnostics to report.")
+        return
+
+    for message in messages:
+        title = format_diagnostic_title(message)
+        body = message["message"]
+        severity = message["severity"]
+
+        if severity == "error":
+            st.error(f"{title}: {body}")
+        else:
+            st.warning(f"{title}: {body}")
+
+    with st.expander("Raw diagnostic data"):
+        st.json(messages)
+
+
+def guidance_for_messages(messages: list[dict]) -> list[str]:
+    suggestions: list[str] = []
+    codes = {message["code"] for message in messages}
+    if "missing-ground" in codes:
+        suggestions.append("Add a reference node named `0` or `GND` so the circuit has a valid ground.")
+    if "floating-nodes" in codes:
+        suggestions.append("Connect isolated nodes back to the grounded part of the circuit or remove the floating subnetwork.")
+    if "reactive-only-network" in codes:
+        suggestions.append("Add a DC path such as a resistor if you want DC operating point analysis to succeed.")
+    return suggestions
+
+
 def render_sidebar() -> tuple[object, str]:
     st.sidebar.title("CircuitSim")
-    module_dir = st.sidebar.text_input("Python module dir", str(BUILD_PYTHON))
+    module_dir = str(discover_module_dir())
     if module_dir not in sys.path:
         sys.path.insert(0, module_dir)
     circuitsim_py = get_circuitsim_module(module_dir)
     st.sidebar.caption("Backed by the C++ simulation core via pybind11.")
+    with st.sidebar.expander("Advanced"):
+        st.code(module_dir)
     return circuitsim_py, module_dir
 
 
@@ -114,7 +168,7 @@ def render_dc_tab(circuitsim_py):
     if st.button("Run DC", key="run_dc"):
         result = circuitsim_py.run_dc(netlist)
         if result["diagnostics"]:
-            st.warning(result["diagnostics"])
+            render_diagnostic_messages(result["diagnostics"])
         st.json(result)
 
 
@@ -127,7 +181,7 @@ def render_transient_tab(circuitsim_py):
     if st.button("Run transient", key="run_tran"):
         result = circuitsim_py.run_transient(netlist, time_step, stop_time)
         if result["diagnostics"]:
-            st.warning(result["diagnostics"])
+            render_diagnostic_messages(result["diagnostics"])
         figure = plot_waveforms(result["time_points"], result["node_voltages"], "Transient Response")
         st.pyplot(figure)
         st.json({"time_points": result["time_points"][:5], "node_voltages_preview": {k: v[:5] for k, v in result["node_voltages"].items()}})
@@ -142,7 +196,7 @@ def render_ac_tab(circuitsim_py):
         frequencies = [float(value.strip()) for value in frequency_text.split(",") if value.strip()]
         result = circuitsim_py.run_ac(netlist, frequencies)
         if result["diagnostics"]:
-            st.warning(result["diagnostics"])
+            render_diagnostic_messages(result["diagnostics"])
         figure = plot_ac_magnitude(result["frequencies_hz"], result["node_voltages"], "AC Magnitude Response")
         st.pyplot(figure)
         st.json(result)
@@ -203,7 +257,12 @@ def render_diagnostics_tab(circuitsim_py):
             st.error("Diagnostics found blocking issues.")
         else:
             st.success("No blocking issues found.")
-        st.json(result)
+        render_diagnostic_messages(result["messages"])
+        suggestions = guidance_for_messages(result["messages"])
+        if suggestions:
+            st.info("Suggested next steps:")
+            for suggestion in suggestions:
+                st.markdown(f"- {suggestion}")
 
 
 def render_showcase_tab(circuitsim_py):

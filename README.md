@@ -241,6 +241,8 @@ It currently provides:
 - diagnostics
 - the chip-focused showcase
 
+The app auto-detects the built Python extension by default, so you normally do not need to configure any module path manually.
+
 ## Roadmap
 
 The detailed execution plan lives in [TASKS.md](TASKS.md).
