@@ -26,6 +26,8 @@ add_library(circuitsim
     src/transient_solver.cpp
 )
 
+set_target_properties(circuitsim PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 target_include_directories(circuitsim
     PUBLIC
         ${PROJECT_SOURCE_DIR}/include
