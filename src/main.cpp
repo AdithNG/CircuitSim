@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 
+#include "circuitsim/diagnostics.h"
 #include "circuitsim/dc_solver.h"
 #include "circuitsim/netlist_parser.h"
 #include "circuitsim/transient_solver.h"
@@ -25,6 +26,15 @@ void print_usage() {
     std::cerr << "Usage:\n";
     std::cerr << "  circuitsim_cli <netlist-file>\n";
     std::cerr << "  circuitsim_cli tran <netlist-file> <time-step> <stop-time>\n";
+}
+
+void print_diagnostics(const std::vector<circuitsim::DiagnosticMessage>& diagnostics) {
+    for (const auto& diagnostic : diagnostics) {
+        const char* severity =
+            diagnostic.severity == circuitsim::DiagnosticSeverity::error ? "error" : "warning";
+        std::cerr << "Diagnostic " << severity << " [" << diagnostic.code << "]: "
+                  << diagnostic.message << '\n';
+    }
 }
 
 }  // namespace
@@ -63,6 +73,7 @@ int main(int argc, char** argv) {
     if (dc_mode) {
         const circuitsim::DCSolver solver;
         const auto solve_result = solver.solve(parse_result.circuit);
+        print_diagnostics(solve_result.diagnostics);
         if (!solve_result.ok()) {
             for (const auto& error : solve_result.errors) {
                 std::cerr << "Solve error: " << error.message << '\n';
@@ -92,6 +103,7 @@ int main(int argc, char** argv) {
 
     const circuitsim::TransientSolver solver;
     const auto solve_result = solver.solve(parse_result.circuit, config);
+    print_diagnostics(solve_result.diagnostics);
     if (!solve_result.ok()) {
         for (const auto& error : solve_result.errors) {
             std::cerr << "Solve error: " << error.message << '\n';

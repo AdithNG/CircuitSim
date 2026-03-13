@@ -5,6 +5,7 @@
 #include <string>
 
 #include "circuitsim/dc_solver.h"
+#include "circuitsim/diagnostics.h"
 #include "circuitsim/netlist_parser.h"
 #include "circuitsim/transient_solver.h"
 
@@ -54,6 +55,23 @@ py::dict component_to_dict(const circuitsim::Component& component) {
     return data;
 }
 
+py::dict diagnostic_to_dict(const circuitsim::DiagnosticMessage& diagnostic) {
+    py::dict data;
+    data["severity"] =
+        diagnostic.severity == circuitsim::DiagnosticSeverity::error ? "error" : "warning";
+    data["code"] = diagnostic.code;
+    data["message"] = diagnostic.message;
+    return data;
+}
+
+py::list diagnostics_to_list(const std::vector<circuitsim::DiagnosticMessage>& diagnostics) {
+    py::list values;
+    for (const auto& diagnostic : diagnostics) {
+        values.append(diagnostic_to_dict(diagnostic));
+    }
+    return values;
+}
+
 }  // namespace
 
 PYBIND11_MODULE(circuitsim_py, module) {
@@ -71,6 +89,15 @@ PYBIND11_MODULE(circuitsim_py, module) {
         return data;
     });
 
+    module.def("diagnose_netlist", [](const std::string& text) {
+        const auto circuit = parse_or_throw(text);
+        const auto diagnostics = circuitsim::analyze_circuit(circuit);
+        py::dict data;
+        data["messages"] = diagnostics_to_list(diagnostics.messages);
+        data["has_errors"] = diagnostics.has_errors();
+        return data;
+    });
+
     module.def("run_dc", [](const std::string& text) {
         const auto circuit = parse_or_throw(text);
         const circuitsim::DCSolver solver;
@@ -84,6 +111,7 @@ PYBIND11_MODULE(circuitsim_py, module) {
         }
 
         py::dict data;
+        data["diagnostics"] = diagnostics_to_list(result.diagnostics);
         data["node_voltages"] = result.node_voltages;
         data["source_currents"] = result.source_currents;
         return data;
@@ -109,6 +137,7 @@ PYBIND11_MODULE(circuitsim_py, module) {
         }
 
         py::dict data;
+        data["diagnostics"] = diagnostics_to_list(result.diagnostics);
         data["time_points"] = result.time_points;
         data["node_voltages"] = result.node_voltages;
         data["source_currents"] = result.source_currents;

@@ -20,6 +20,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(CIRCUITSIM_BUILD_TESTS "Build CircuitSim tests" ON)
 
 add_library(circuitsim
+    src/diagnostics.cpp
     src/dc_solver.cpp
     src/netlist_parser.cpp
     src/transient_solver.cpp
@@ -69,6 +70,7 @@ if(CIRCUITSIM_BUILD_TESTS)
     enable_testing()
 
     add_executable(circuitsim_tests
+        tests/diagnostics_tests.cpp
         tests/dc_solver_tests.cpp
         tests/test_main.cpp
         tests/netlist_parser_tests.cpp

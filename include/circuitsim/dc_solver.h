@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "circuitsim/circuit.h"
+#include "circuitsim/diagnostics.h"
 
 namespace circuitsim {
 
@@ -15,6 +16,7 @@ struct SolveError {
 struct DCSolveResult {
     std::unordered_map<std::string, double> node_voltages;
     std::unordered_map<std::string, double> source_currents;
+    std::vector<DiagnosticMessage> diagnostics;
     std::vector<SolveError> errors;
 
     [[nodiscard]] bool ok() const {

@@ -48,6 +48,7 @@ Implemented so far:
 - a small CLI for running DC or transient analysis on a netlist file
 - Python bindings for parsing, DC analysis, and transient simulation
 - parameterized netlist sweeps with JSON export and comparison plotting
+- circuit diagnostics for missing ground, floating nodes, and reactive-only warnings
 - automated tests and CI
 
 ## Repository Layout
@@ -125,6 +126,14 @@ result = circuitsim_py.run_dc("V1 in 0 5\nR1 in out 1k\nR2 out 0 2k\n")
 print(result["node_voltages"]["out"])
 ```
 
+Diagnostics are also exposed through Python:
+
+```python
+diagnostics = circuitsim_py.diagnose_netlist("R1 a b 1k\n")
+print(diagnostics["has_errors"])
+print(diagnostics["messages"])
+```
+
 ## Parameter Sweeps
 
 Parameterized templates use `{{NAME}}` placeholders.
@@ -153,6 +162,15 @@ This writes:
 
 - a JSON file with all sweep results
 - a plot comparing the sweep output
+
+## Diagnostics
+
+CircuitSim now performs a basic topology analysis before solving. The current diagnostics can report:
+
+- missing ground
+- floating nodes
+- components inside floating regions
+- reactive-only networks that are likely to fail in DC analysis
 
 ## Roadmap
 

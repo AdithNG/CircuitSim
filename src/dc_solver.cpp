@@ -18,6 +18,17 @@ void add_error(DCSolveResult& result, std::string message) {
 DCSolveResult DCSolver::solve(const Circuit& circuit) const {
     DCSolveResult result;
 
+    const CircuitDiagnostics diagnostics = analyze_circuit(circuit);
+    result.diagnostics = diagnostics.messages;
+    if (diagnostics.has_errors()) {
+        for (const auto& diagnostic : diagnostics.messages) {
+            if (diagnostic.severity == DiagnosticSeverity::error) {
+                add_error(result, diagnostic.message);
+            }
+        }
+        return result;
+    }
+
     if (circuit.components.empty()) {
         add_error(result, "circuit has no components");
         return result;
@@ -27,18 +38,10 @@ DCSolveResult DCSolver::solve(const Circuit& circuit) const {
     node_index.reserve(circuit.nodes.size());
 
     int next_node_index = 0;
-    bool found_ground = false;
     for (const auto& node : circuit.nodes) {
-        if (is_ground_node(node)) {
-            found_ground = true;
-        } else {
+        if (!is_ground_node(node)) {
             node_index.emplace(node, next_node_index++);
         }
-    }
-
-    if (!found_ground) {
-        add_error(result, "circuit must contain a ground node named 0 or GND");
-        return result;
     }
 
     std::vector<const Component*> voltage_sources;

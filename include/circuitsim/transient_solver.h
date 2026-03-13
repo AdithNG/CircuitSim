@@ -18,6 +18,7 @@ struct TransientSolveResult {
     std::vector<double> time_points;
     std::unordered_map<std::string, std::vector<double>> node_voltages;
     std::unordered_map<std::string, std::vector<double>> source_currents;
+    std::vector<DiagnosticMessage> diagnostics;
     std::vector<SolveError> errors;
 
     [[nodiscard]] bool ok() const {

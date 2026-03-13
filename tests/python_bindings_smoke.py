@@ -35,6 +35,12 @@ def main() -> int:
     if parsed["nodes"] != ["in", "0", "out"]:
         raise SystemExit(f"unexpected node list: {parsed['nodes']}")
 
+    diagnostics = circuitsim_py.diagnose_netlist("R1 a b 1k\n")
+    if not diagnostics["has_errors"]:
+        raise SystemExit("expected diagnostics to report an error for missing ground")
+    if diagnostics["messages"][0]["code"] != "missing-ground":
+        raise SystemExit(f"unexpected diagnostic code: {diagnostics['messages'][0]['code']}")
+
     print("Python bindings smoke test passed")
     return 0
 
