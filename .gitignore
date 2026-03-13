@@ -1,6 +1,7 @@
 build/
 out/
 dist/
+plots/
 .vs/
 .vscode/
 __pycache__/

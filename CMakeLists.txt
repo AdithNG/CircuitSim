@@ -2,7 +2,16 @@ cmake_minimum_required(VERSION 3.20)
 
 project(CircuitSim VERSION 0.1.0 LANGUAGES CXX)
 
-find_package(Python3 COMPONENTS Interpreter)
+find_package(Python3 COMPONENTS Interpreter Development.Module)
+
+include(FetchContent)
+
+FetchContent_Declare(
+    pybind11
+    GIT_REPOSITORY https://github.com/pybind/pybind11.git
+    GIT_TAG v2.13.6
+)
+FetchContent_MakeAvailable(pybind11)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -39,6 +48,21 @@ if(MSVC)
     target_compile_options(circuitsim_cli PRIVATE /W4 /permissive-)
 else()
     target_compile_options(circuitsim_cli PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+if(Python3_Development.Module_FOUND)
+    pybind11_add_module(circuitsim_py python/bindings.cpp)
+    target_link_libraries(circuitsim_py PRIVATE circuitsim)
+
+    set_target_properties(
+        circuitsim_py
+        PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/python
+        LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BINARY_DIR}/python
+        LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/python
+        LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${PROJECT_BINARY_DIR}/python
+        LIBRARY_OUTPUT_DIRECTORY_MINSIZEREL ${PROJECT_BINARY_DIR}/python
+    )
 endif()
 
 if(CIRCUITSIM_BUILD_TESTS)
@@ -92,6 +116,21 @@ if(CIRCUITSIM_BUILD_TESTS)
             circuitsim_plot_transient_smoke
             PROPERTIES
             PASS_REGULAR_EXPRESSION "Wrote plot to"
+        )
+    endif()
+    if(Python3_Interpreter_FOUND AND Python3_Development.Module_FOUND)
+        add_test(
+            NAME circuitsim_python_bindings_smoke
+            COMMAND
+                ${Python3_EXECUTABLE}
+                ${PROJECT_SOURCE_DIR}/tests/python_bindings_smoke.py
+                --module-dir
+                ${PROJECT_BINARY_DIR}/python
+        )
+        set_tests_properties(
+            circuitsim_python_bindings_smoke
+            PROPERTIES
+            PASS_REGULAR_EXPRESSION "Python bindings smoke test passed"
         )
     endif()
 endif()

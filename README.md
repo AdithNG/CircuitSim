@@ -46,6 +46,7 @@ Implemented so far:
 - DC operating point solving for resistors, current sources, and voltage sources
 - transient simulation for resistor-capacitor circuits using backward Euler
 - a small CLI for running DC or transient analysis on a netlist file
+- Python bindings for parsing, DC analysis, and transient simulation
 - automated tests and CI
 
 ## Repository Layout
@@ -104,6 +105,22 @@ python python/plot_transient.py examples/rc_charge.cir 1e-4 5e-3 --output plots/
 ```
 
 This uses `matplotlib` on top of the C++ CLI output, which gives us a fast path to visuals before we add deeper Python bindings or a richer UI.
+
+## Python API
+
+After building, a Python extension module is available in `build/python`.
+
+Example:
+
+```python
+import sys
+sys.path.insert(0, "build/python")
+
+import circuitsim_py
+
+result = circuitsim_py.run_dc("V1 in 0 5\nR1 in out 1k\nR2 out 0 2k\n")
+print(result["node_voltages"]["out"])
+```
 
 ## Roadmap
 
