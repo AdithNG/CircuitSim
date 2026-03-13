@@ -54,25 +54,20 @@ Available views:
 
 The app auto-detects the built Python extension by default.
 
-## Project Status
+## Current Coverage
 
-Completed or mostly completed:
+CircuitSim currently includes:
 
-- repository setup and test scaffolding
-- netlist parser and circuit graph
-- DC solver
-- transient RC and RL solver
-- Python automation layer
-- parameter sweeps and experiment runner
-- diagnostics and workflow reporting
-- chip-focused showcase example
-- CI and interactive UI
-- AC analysis
+- netlist parsing and validation
+- DC analysis for linear resistor, voltage-source, and current-source circuits
+- transient analysis for RC and RL circuits
+- AC small-signal analysis for linear RC circuits
+- Python bindings, plotting utilities, parameter sweeps, and diagnostics
+- a Streamlit workbench and a chip-focused interconnect showcase
 
-Still partial or not implemented:
+Areas still worth extending:
 
-- RL transient support
-- inductor support in DC, transient, and AC analysis
+- inductor support in DC and AC analysis
 - deeper convergence diagnostics
 - richer simulation summaries and metadata
 - performance profiling and optimization
