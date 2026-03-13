@@ -47,6 +47,7 @@ Implemented so far:
 - transient simulation for resistor-capacitor circuits using backward Euler
 - a small CLI for running DC or transient analysis on a netlist file
 - Python bindings for parsing, DC analysis, and transient simulation
+- parameterized netlist sweeps with JSON export and comparison plotting
 - automated tests and CI
 
 ## Repository Layout
@@ -121,6 +122,35 @@ import circuitsim_py
 result = circuitsim_py.run_dc("V1 in 0 5\nR1 in out 1k\nR2 out 0 2k\n")
 print(result["node_voltages"]["out"])
 ```
+
+## Parameter Sweeps
+
+Parameterized templates use `{{NAME}}` placeholders.
+
+Example template:
+
+```text
+V1 in 0 5
+R1 in out 1k
+R2 out 0 {{RLOAD}}
+```
+
+Run a DC sweep:
+
+```bash
+python python/sweep.py dc examples/resistor_divider_param.cir.in RLOAD 1000,2000,4000 --module-dir build/python --observe out --output-json build/dc_sweep.json --plot plots/dc_sweep.png
+```
+
+Or with the `Makefile`:
+
+```bash
+make sweep-dc
+```
+
+This writes:
+
+- a JSON file with all sweep results
+- a plot comparing the sweep output
 
 ## Roadmap
 

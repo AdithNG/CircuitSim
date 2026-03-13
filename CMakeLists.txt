@@ -132,5 +132,18 @@ if(CIRCUITSIM_BUILD_TESTS)
             PROPERTIES
             PASS_REGULAR_EXPRESSION "Python bindings smoke test passed"
         )
+        add_test(
+            NAME circuitsim_parameter_sweep_smoke
+            COMMAND
+                ${Python3_EXECUTABLE}
+                ${PROJECT_SOURCE_DIR}/tests/parameter_sweep_smoke.py
+                --module-dir
+                ${PROJECT_BINARY_DIR}/python
+        )
+        set_tests_properties(
+            circuitsim_parameter_sweep_smoke
+            PROPERTIES
+            PASS_REGULAR_EXPRESSION "Parameter sweep smoke test passed"
+        )
     endif()
 endif()
