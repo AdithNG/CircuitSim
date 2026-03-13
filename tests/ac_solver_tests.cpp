@@ -38,6 +38,11 @@ TEST_CASE(ac_solver_matches_rc_lowpass_cutoff_response) {
     const auto result = solver.solve(circuit, {159154.94309189535});
 
     EXPECT_TRUE(result.ok());
+    EXPECT_EQ(result.summary.analysis_type, std::string("ac"));
+    EXPECT_EQ(result.summary.node_count, 3U);
+    EXPECT_EQ(result.summary.component_count, 3U);
+    EXPECT_EQ(result.summary.capacitor_count, 1U);
+    EXPECT_EQ(result.summary.sample_count, 1U);
     EXPECT_EQ(result.frequencies_hz.size(), 1U);
     EXPECT_NEAR(magnitude(result.node_voltages.at("in")[0]), 1.0, 1e-9);
     EXPECT_NEAR(magnitude(result.node_voltages.at("out")[0]), std::sqrt(0.5), 1e-3);

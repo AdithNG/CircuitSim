@@ -11,6 +11,7 @@ CircuitSim is a simulation-first circuit analysis and design exploration tool bu
 - Python bindings for direct scripting
 - parameter sweeps with JSON export and plotting
 - topology diagnostics for common netlist issues
+- per-analysis summaries for solver runs
 - a chip-focused interconnect showcase
 - automated tests and GitHub Actions CI
 
@@ -63,6 +64,7 @@ CircuitSim currently includes:
 - transient analysis for RC and RL circuits
 - AC small-signal analysis for linear RLC circuits
 - Python bindings, plotting utilities, parameter sweeps, and diagnostics
+- solver metadata summaries in the CLI and Python API
 - a Streamlit workbench and a chip-focused interconnect showcase
 
 Areas still worth extending:
@@ -87,6 +89,9 @@ make run-dc
 make run-tran
 make run-ac
 ```
+
+Each CLI analysis prints a short summary before the numeric results, including the
+analysis type, node/component counts, component mix, and sample count.
 
 Run a sweep:
 
@@ -121,6 +126,7 @@ sys.path.insert(0, "build/python")
 import circuitsim_py
 
 dc = circuitsim_py.run_dc("V1 in 0 5\nR1 in out 1k\nR2 out 0 2k\n")
+print(dc["summary"])
 print(dc["node_voltages"]["out"])
 
 ac = circuitsim_py.run_ac("V1 in 0 1\nR1 in out 1k\nC1 out 0 1n\n", [159154.94309189535])

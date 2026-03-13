@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "circuitsim/analysis_summary.h"
 #include "circuitsim/circuit.h"
 #include "circuitsim/diagnostics.h"
 
@@ -14,6 +15,7 @@ struct SolveError {
 };
 
 struct DCSolveResult {
+    AnalysisSummary summary;
     std::unordered_map<std::string, double> node_voltages;
     std::unordered_map<std::string, double> source_currents;
     std::vector<DiagnosticMessage> diagnostics;

@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "analysis_summary_utils.h"
 #include "circuitsim/diagnostics.h"
 #include "solver_utils.h"
 
@@ -24,6 +25,8 @@ ACSolveResult ACSolver::solve(
     const std::vector<double>& frequencies_hz
 ) const {
     ACSolveResult result;
+    result.summary = make_base_summary(circuit, "ac");
+    result.summary.sample_count = frequencies_hz.size();
 
     const CircuitDiagnostics diagnostics = analyze_circuit(circuit);
     result.diagnostics = diagnostics.messages;

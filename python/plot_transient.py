@@ -55,7 +55,17 @@ def run_cli(cli_path: str, netlist: str, time_step: str, stop_time: str) -> str:
 
 
 def parse_csv(csv_text: str) -> tuple[list[float], dict[str, list[float]]]:
-    reader = csv.DictReader(io.StringIO(csv_text))
+    lines = csv_text.splitlines()
+    header_index = None
+    for index, line in enumerate(lines):
+        if line.startswith("time,"):
+            header_index = index
+            break
+
+    if header_index is None:
+        raise RuntimeError("transient CLI output did not include waveform CSV data")
+
+    reader = csv.DictReader(io.StringIO("\n".join(lines[header_index:])))
     times: list[float] = []
     series: dict[str, list[float]] = {}
 

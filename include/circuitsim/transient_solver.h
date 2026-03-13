@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "circuitsim/analysis_summary.h"
 #include "circuitsim/circuit.h"
 #include "circuitsim/dc_solver.h"
 
@@ -15,6 +16,7 @@ struct TransientAnalysisConfig {
 };
 
 struct TransientSolveResult {
+    AnalysisSummary summary;
     std::vector<double> time_points;
     std::unordered_map<std::string, std::vector<double>> node_voltages;
     std::unordered_map<std::string, std::vector<double>> source_currents;

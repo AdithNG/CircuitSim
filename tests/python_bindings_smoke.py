@@ -18,6 +18,10 @@ def main() -> int:
     import circuitsim_py
 
     dc_result = circuitsim_py.run_dc("V1 in 0 5\nR1 in out 1k\nR2 out 0 2k\n")
+    if dc_result["summary"]["analysis_type"] != "dc":
+        raise SystemExit(f"unexpected DC analysis type: {dc_result['summary']['analysis_type']}")
+    if dc_result["summary"]["component_count"] != 3:
+        raise SystemExit(f"unexpected DC component count: {dc_result['summary']['component_count']}")
     out_voltage = dc_result["node_voltages"]["out"]
     if abs(out_voltage - (10.0 / 3.0)) > 1e-9:
         raise SystemExit(f"unexpected DC out voltage: {out_voltage}")
@@ -27,6 +31,12 @@ def main() -> int:
         1e-4,
         5e-3,
     )
+    if tran_result["summary"]["analysis_type"] != "transient":
+        raise SystemExit(
+            f"unexpected transient analysis type: {tran_result['summary']['analysis_type']}"
+        )
+    if tran_result["summary"]["sample_count"] != len(tran_result["time_points"]):
+        raise SystemExit("transient summary sample count does not match waveform length")
     final_out = tran_result["node_voltages"]["out"][-1]
     if final_out < 4.9 or final_out > 5.01:
         raise SystemExit(f"unexpected transient final out voltage: {final_out}")
@@ -35,6 +45,10 @@ def main() -> int:
         "V1 in 0 1\nR1 in out 1k\nC1 out 0 1n\n",
         [159154.94309189535],
     )
+    if ac_result["summary"]["analysis_type"] != "ac":
+        raise SystemExit(f"unexpected AC analysis type: {ac_result['summary']['analysis_type']}")
+    if ac_result["summary"]["sample_count"] != 1:
+        raise SystemExit(f"unexpected AC sample count: {ac_result['summary']['sample_count']}")
     ac_out = ac_result["node_voltages"]["out"][0]["magnitude"]
     if abs(ac_out - (2 ** -0.5)) > 1e-3:
         raise SystemExit(f"unexpected AC out magnitude: {ac_out}")

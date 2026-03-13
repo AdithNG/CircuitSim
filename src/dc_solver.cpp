@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 
+#include "analysis_summary_utils.h"
 #include "solver_utils.h"
 
 namespace circuitsim {
@@ -17,6 +18,8 @@ void add_error(DCSolveResult& result, std::string message) {
 
 DCSolveResult DCSolver::solve(const Circuit& circuit) const {
     DCSolveResult result;
+    result.summary = make_base_summary(circuit, "dc");
+    result.summary.sample_count = 1;
 
     const CircuitDiagnostics diagnostics = analyze_circuit(circuit);
     result.diagnostics = diagnostics.messages;

@@ -5,12 +5,14 @@
 #include <unordered_map>
 #include <vector>
 
+#include "circuitsim/analysis_summary.h"
 #include "circuitsim/circuit.h"
 #include "circuitsim/dc_solver.h"
 
 namespace circuitsim {
 
 struct ACSolveResult {
+    AnalysisSummary summary;
     std::vector<double> frequencies_hz;
     std::unordered_map<std::string, std::vector<std::complex<double>>> node_voltages;
     std::unordered_map<std::string, std::vector<std::complex<double>>> source_currents;

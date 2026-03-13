@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "analysis_summary_utils.h"
 #include "solver_utils.h"
 
 namespace circuitsim {
@@ -23,6 +24,9 @@ TransientSolveResult TransientSolver::solve(
     const TransientAnalysisConfig& config
 ) const {
     TransientSolveResult result;
+    result.summary = make_base_summary(circuit, "transient");
+    result.summary.time_step = config.time_step;
+    result.summary.stop_time = config.stop_time;
 
     const CircuitDiagnostics diagnostics = analyze_circuit(circuit);
     result.diagnostics = diagnostics.messages;
@@ -96,6 +100,7 @@ TransientSolveResult TransientSolver::solve(
     };
 
     const std::size_t step_count = static_cast<std::size_t>(std::ceil(config.stop_time / config.time_step));
+    result.summary.sample_count = step_count;
     std::vector<double> previous_solution(system_size, 0.0);
 
     result.node_voltages.emplace("0", std::vector<double>(step_count, 0.0));

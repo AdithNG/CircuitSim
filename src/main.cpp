@@ -42,6 +42,23 @@ void print_diagnostics(const std::vector<circuitsim::DiagnosticMessage>& diagnos
     }
 }
 
+void print_summary(const circuitsim::AnalysisSummary& summary) {
+    std::cout << "Summary:\n";
+    std::cout << "  analysis = " << summary.analysis_type << '\n';
+    std::cout << "  nodes = " << summary.node_count << '\n';
+    std::cout << "  components = " << summary.component_count << '\n';
+    std::cout << "  resistors = " << summary.resistor_count << '\n';
+    std::cout << "  capacitors = " << summary.capacitor_count << '\n';
+    std::cout << "  inductors = " << summary.inductor_count << '\n';
+    std::cout << "  voltage_sources = " << summary.voltage_source_count << '\n';
+    std::cout << "  current_sources = " << summary.current_source_count << '\n';
+    std::cout << "  samples = " << summary.sample_count << '\n';
+    if (summary.analysis_type == "transient") {
+        std::cout << "  time_step = " << summary.time_step << '\n';
+        std::cout << "  stop_time = " << summary.stop_time << '\n';
+    }
+}
+
 std::vector<double> parse_frequency_list(const std::string& text) {
     std::vector<double> frequencies;
     std::stringstream stream(text);
@@ -100,6 +117,7 @@ int main(int argc, char** argv) {
         }
 
         std::cout << std::fixed << std::setprecision(6);
+        print_summary(solve_result.summary);
         std::cout << "Node voltages:\n";
         for (const auto& [node, voltage] : sort_scalars(solve_result.node_voltages)) {
             std::cout << "  " << node << " = " << voltage << " V\n";
@@ -126,6 +144,7 @@ int main(int argc, char** argv) {
         }
 
         std::cout << std::fixed << std::setprecision(6);
+        print_summary(solve_result.summary);
         std::cout << "frequency_hz,node,magnitude,phase_rad\n";
         const auto sorted_nodes = sort_series(solve_result.node_voltages);
         for (std::size_t freq_index = 0; freq_index < solve_result.frequencies_hz.size(); ++freq_index) {
@@ -157,6 +176,7 @@ int main(int argc, char** argv) {
     }
 
     std::cout << std::fixed << std::setprecision(6);
+    print_summary(solve_result.summary);
     std::cout << "time";
     for (const auto& [node, _] : sort_series(solve_result.node_voltages)) {
         std::cout << "," << node;

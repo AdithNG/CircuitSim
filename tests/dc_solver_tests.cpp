@@ -28,6 +28,12 @@ TEST_CASE(dc_solver_solves_resistor_divider) {
     const auto result = solver.solve(circuit);
 
     EXPECT_TRUE(result.ok());
+    EXPECT_EQ(result.summary.analysis_type, std::string("dc"));
+    EXPECT_EQ(result.summary.node_count, 3U);
+    EXPECT_EQ(result.summary.component_count, 3U);
+    EXPECT_EQ(result.summary.resistor_count, 2U);
+    EXPECT_EQ(result.summary.voltage_source_count, 1U);
+    EXPECT_EQ(result.summary.sample_count, 1U);
     EXPECT_NEAR(result.node_voltages.at("in"), 12.0, 1e-9);
     EXPECT_NEAR(result.node_voltages.at("out"), 6.0, 1e-9);
     EXPECT_NEAR(result.source_currents.at("V1"), -0.006, 1e-12);

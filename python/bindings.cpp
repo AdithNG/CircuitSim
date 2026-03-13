@@ -73,6 +73,22 @@ py::list diagnostics_to_list(const std::vector<circuitsim::DiagnosticMessage>& d
     return values;
 }
 
+py::dict summary_to_dict(const circuitsim::AnalysisSummary& summary) {
+    py::dict data;
+    data["analysis_type"] = summary.analysis_type;
+    data["node_count"] = summary.node_count;
+    data["component_count"] = summary.component_count;
+    data["resistor_count"] = summary.resistor_count;
+    data["capacitor_count"] = summary.capacitor_count;
+    data["inductor_count"] = summary.inductor_count;
+    data["voltage_source_count"] = summary.voltage_source_count;
+    data["current_source_count"] = summary.current_source_count;
+    data["sample_count"] = summary.sample_count;
+    data["time_step"] = summary.time_step;
+    data["stop_time"] = summary.stop_time;
+    return data;
+}
+
 }  // namespace
 
 PYBIND11_MODULE(circuitsim_py, module) {
@@ -112,6 +128,7 @@ PYBIND11_MODULE(circuitsim_py, module) {
         }
 
         py::dict data;
+        data["summary"] = summary_to_dict(result.summary);
         data["diagnostics"] = diagnostics_to_list(result.diagnostics);
         data["node_voltages"] = result.node_voltages;
         data["source_currents"] = result.source_currents;
@@ -159,6 +176,7 @@ PYBIND11_MODULE(circuitsim_py, module) {
         }
 
         py::dict data;
+        data["summary"] = summary_to_dict(result.summary);
         data["diagnostics"] = diagnostics_to_list(result.diagnostics);
         data["frequencies_hz"] = result.frequencies_hz;
         data["node_voltages"] = node_voltages;
@@ -186,6 +204,7 @@ PYBIND11_MODULE(circuitsim_py, module) {
         }
 
         py::dict data;
+        data["summary"] = summary_to_dict(result.summary);
         data["diagnostics"] = diagnostics_to_list(result.diagnostics);
         data["time_points"] = result.time_points;
         data["node_voltages"] = result.node_voltages;

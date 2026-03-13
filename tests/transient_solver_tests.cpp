@@ -29,6 +29,13 @@ TEST_CASE(transient_solver_simulates_rc_charge) {
     const auto result = solver.solve(circuit, TransientAnalysisConfig{.time_step = 1e-4, .stop_time = 5e-3});
 
     EXPECT_TRUE(result.ok());
+    EXPECT_EQ(result.summary.analysis_type, std::string("transient"));
+    EXPECT_EQ(result.summary.node_count, 3U);
+    EXPECT_EQ(result.summary.component_count, 3U);
+    EXPECT_EQ(result.summary.capacitor_count, 1U);
+    EXPECT_EQ(result.summary.sample_count, 50U);
+    EXPECT_NEAR(result.summary.time_step, 1e-4, 1e-12);
+    EXPECT_NEAR(result.summary.stop_time, 5e-3, 1e-12);
     EXPECT_EQ(result.time_points.size(), 50U);
     EXPECT_EQ(result.node_voltages.at("out").size(), 50U);
     EXPECT_NEAR(result.time_points.front(), 1e-4, 1e-12);
