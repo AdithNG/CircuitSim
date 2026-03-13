@@ -250,7 +250,18 @@ def render_sweep_tab(circuitsim_py):
 
 def render_diagnostics_tab(circuitsim_py):
     st.subheader("Diagnostics")
-    netlist = st.text_area("Netlist", "R1 a b 1k\n", height=160, key="diag_text")
+    if "diag_text" not in st.session_state:
+        st.session_state["diag_text"] = "V1 a 0 5\nR1 a b 1k\nR2 b 0 2k\n"
+
+    action_left, action_right = st.columns(2)
+    with action_left:
+        if st.button("Load valid example", key="load_diag_valid"):
+            st.session_state["diag_text"] = "V1 a 0 5\nR1 a b 1k\nR2 b 0 2k\n"
+    with action_right:
+        if st.button("Load broken example", key="load_diag_invalid"):
+            st.session_state["diag_text"] = "R1 a b 1k\n"
+
+    netlist = st.text_area("Netlist", height=160, key="diag_text")
     if st.button("Analyze netlist", key="run_diag"):
         result = circuitsim_py.diagnose_netlist(netlist)
         if result["has_errors"]:
