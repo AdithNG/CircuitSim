@@ -11,6 +11,7 @@ option(CIRCUITSIM_BUILD_TESTS "Build CircuitSim tests" ON)
 add_library(circuitsim
     src/dc_solver.cpp
     src/netlist_parser.cpp
+    src/transient_solver.cpp
 )
 
 target_include_directories(circuitsim
@@ -45,6 +46,7 @@ if(CIRCUITSIM_BUILD_TESTS)
         tests/dc_solver_tests.cpp
         tests/test_main.cpp
         tests/netlist_parser_tests.cpp
+        tests/transient_solver_tests.cpp
     )
 
     target_link_libraries(circuitsim_tests PRIVATE circuitsim)
@@ -65,5 +67,14 @@ if(CIRCUITSIM_BUILD_TESTS)
         circuitsim_cli_resistor_divider
         PROPERTIES
         PASS_REGULAR_EXPRESSION "out = 3.333333"
+    )
+    add_test(
+        NAME circuitsim_cli_rc_charge
+        COMMAND circuitsim_cli tran ${PROJECT_SOURCE_DIR}/examples/rc_charge.cir 1e-4 5e-3
+    )
+    set_tests_properties(
+        circuitsim_cli_rc_charge
+        PROPERTIES
+        PASS_REGULAR_EXPRESSION "0\\.005000,0\\.000000,5\\.000000,4\\."
     )
 endif()

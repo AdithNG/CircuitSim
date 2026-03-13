@@ -44,7 +44,8 @@ Implemented so far:
 
 - SPICE-like netlist parsing and validation
 - DC operating point solving for resistors, current sources, and voltage sources
-- a small CLI for running DC analysis on a netlist file
+- transient simulation for resistor-capacitor circuits using backward Euler
+- a small CLI for running DC or transient analysis on a netlist file
 - automated tests and CI
 
 ## Repository Layout
@@ -80,6 +81,12 @@ ctest --test-dir build -C Debug --output-on-failure
 
 ```bash
 ./build/Debug/circuitsim_cli examples/resistor_divider.cir
+```
+
+Transient example:
+
+```bash
+./build/Debug/circuitsim_cli tran examples/rc_charge.cir 1e-4 5e-3
 ```
 
 ## Roadmap

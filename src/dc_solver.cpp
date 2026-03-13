@@ -1,87 +1,18 @@
 #include "circuitsim/dc_solver.h"
 
-#include <algorithm>
-#include <cctype>
-#include <cmath>
-#include <limits>
-#include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
+#include "solver_utils.h"
+
 namespace circuitsim {
 namespace {
-
-constexpr double kPivotTolerance = 1e-12;
-
-bool is_ground_node(const std::string& node_name) {
-    if (node_name == "0") {
-        return true;
-    }
-
-    std::string normalized;
-    normalized.reserve(node_name.size());
-    for (const char character : node_name) {
-        normalized.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(character))));
-    }
-
-    return normalized == "gnd";
-}
 
 void add_error(DCSolveResult& result, std::string message) {
     result.errors.push_back(SolveError{std::move(message)});
 }
-
-std::vector<double> solve_linear_system(std::vector<std::vector<double>> matrix, std::vector<double> rhs) {
-    const std::size_t size = matrix.size();
-    for (std::size_t pivot = 0; pivot < size; ++pivot) {
-        std::size_t best_row = pivot;
-        double best_value = std::fabs(matrix[pivot][pivot]);
-
-        for (std::size_t candidate = pivot + 1; candidate < size; ++candidate) {
-            const double candidate_value = std::fabs(matrix[candidate][pivot]);
-            if (candidate_value > best_value) {
-                best_value = candidate_value;
-                best_row = candidate;
-            }
-        }
-
-        if (best_value < kPivotTolerance) {
-            throw std::runtime_error("matrix is singular");
-        }
-
-        if (best_row != pivot) {
-            std::swap(matrix[pivot], matrix[best_row]);
-            std::swap(rhs[pivot], rhs[best_row]);
-        }
-
-        const double pivot_value = matrix[pivot][pivot];
-        for (std::size_t row = pivot + 1; row < size; ++row) {
-            const double factor = matrix[row][pivot] / pivot_value;
-            if (std::fabs(factor) < kPivotTolerance) {
-                continue;
-            }
-
-            for (std::size_t column = pivot; column < size; ++column) {
-                matrix[row][column] -= factor * matrix[pivot][column];
-            }
-            rhs[row] -= factor * rhs[pivot];
-        }
-    }
-
-    std::vector<double> solution(size, 0.0);
-    for (std::size_t row = size; row-- > 0;) {
-        double value = rhs[row];
-        for (std::size_t column = row + 1; column < size; ++column) {
-            value -= matrix[row][column] * solution[column];
-        }
-        solution[row] = value / matrix[row][row];
-    }
-
-    return solution;
-}
-
 }  // namespace
 
 DCSolveResult DCSolver::solve(const Circuit& circuit) const {
