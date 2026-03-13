@@ -53,7 +53,8 @@ Available views:
 - diagnostics
 - chip showcase
 
-The app auto-detects the built Python extension by default.
+The app auto-detects the built Python extension by default and surfaces run summaries,
+node/source tables, transient waveform previews, and AC magnitude/phase plots.
 
 ## Current Coverage
 

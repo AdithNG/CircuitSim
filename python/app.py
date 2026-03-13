@@ -83,6 +83,20 @@ def plot_ac_magnitude(frequencies: list[float], node_series: dict[str, list[dict
     return figure
 
 
+def plot_ac_phase(frequencies: list[float], node_series: dict[str, list[dict]], title: str):
+    figure, axis = plt.subplots(figsize=(8, 4.5))
+    for node_name, samples in sorted(node_series.items()):
+        phases = [sample["phase_rad"] for sample in samples]
+        axis.semilogx(frequencies, phases, label=node_name)
+    axis.set_title(title)
+    axis.set_xlabel("Frequency (Hz)")
+    axis.set_ylabel("Phase (rad)")
+    axis.grid(True, which="both", linestyle="--", linewidth=0.5, alpha=0.6)
+    axis.legend()
+    figure.tight_layout()
+    return figure
+
+
 def plot_sweep_curve(x_values: list[float], y_values: list[float], x_label: str, y_label: str, title: str):
     figure, axis = plt.subplots(figsize=(7, 4.2))
     axis.plot(x_values, y_values, marker="o")
@@ -103,6 +117,7 @@ def run_chip_showcase(circuitsim_py, template_text: str, wire_values: list[float
         delay = crossing_time(transient["time_points"], waveform, 0.5)
         results.append(
             {
+                "summary": transient["summary"],
                 "wire_resistance": wire_resistance,
                 "time_points": transient["time_points"],
                 "waveform": waveform,
@@ -150,6 +165,68 @@ def guidance_for_messages(messages: list[dict]) -> list[str]:
     return suggestions
 
 
+def render_summary(summary: dict):
+    st.markdown("**Run Summary**")
+    metrics = st.columns(4)
+    metrics[0].metric("Analysis", summary["analysis_type"].title())
+    metrics[1].metric("Nodes", int(summary["node_count"]))
+    metrics[2].metric("Components", int(summary["component_count"]))
+    metrics[3].metric("Samples", int(summary["sample_count"]))
+
+    detail_columns = st.columns(5)
+    detail_columns[0].metric("Resistors", int(summary["resistor_count"]))
+    detail_columns[1].metric("Capacitors", int(summary["capacitor_count"]))
+    detail_columns[2].metric("Inductors", int(summary["inductor_count"]))
+    detail_columns[3].metric("V Sources", int(summary["voltage_source_count"]))
+    detail_columns[4].metric("I Sources", int(summary["current_source_count"]))
+
+    if summary["analysis_type"] == "transient":
+        transient_columns = st.columns(2)
+        transient_columns[0].metric("Time Step", f"{summary['time_step']:.3e} s")
+        transient_columns[1].metric("Stop Time", f"{summary['stop_time']:.3e} s")
+
+
+def render_scalar_results(title: str, values: dict[str, float], unit: str):
+    if not values:
+        return
+    st.markdown(f"**{title}**")
+    rows = [{"name": name, "value": value, "unit": unit} for name, value in sorted(values.items())]
+    st.dataframe(rows, use_container_width=True, hide_index=True)
+
+
+def render_series_preview(title: str, x_label: str, x_values: list[float], series: dict[str, list[float]]):
+    st.markdown(f"**{title}**")
+    preview_count = min(5, len(x_values))
+    rows = []
+    for index in range(preview_count):
+        row = {x_label: x_values[index]}
+        for node_name, values in sorted(series.items()):
+            row[node_name] = values[index]
+        rows.append(row)
+    st.dataframe(rows, use_container_width=True, hide_index=True)
+
+
+def render_complex_series_preview(
+    title: str,
+    frequencies: list[float],
+    node_series: dict[str, list[dict]],
+):
+    st.markdown(f"**{title}**")
+    rows = []
+    for index, frequency in enumerate(frequencies):
+        for node_name, samples in sorted(node_series.items()):
+            sample = samples[index]
+            rows.append(
+                {
+                    "frequency_hz": frequency,
+                    "node": node_name,
+                    "magnitude": sample["magnitude"],
+                    "phase_rad": sample["phase_rad"],
+                }
+            )
+    st.dataframe(rows, use_container_width=True, hide_index=True)
+
+
 def render_sidebar() -> tuple[object, str]:
     st.sidebar.title("CircuitSim")
     module_dir = str(discover_module_dir())
@@ -170,7 +247,14 @@ def render_dc_tab(circuitsim_py):
         result = circuitsim_py.run_dc(netlist)
         if result["diagnostics"]:
             render_diagnostic_messages(result["diagnostics"])
-        st.json(result)
+        render_summary(result["summary"])
+        value_col, current_col = st.columns(2)
+        with value_col:
+            render_scalar_results("Node Voltages", result["node_voltages"], "V")
+        with current_col:
+            render_scalar_results("Source Currents", result["source_currents"], "A")
+        with st.expander("Raw result data"):
+            st.json(result)
 
 
 def render_transient_tab(circuitsim_py):
@@ -183,9 +267,21 @@ def render_transient_tab(circuitsim_py):
         result = circuitsim_py.run_transient(netlist, time_step, stop_time)
         if result["diagnostics"]:
             render_diagnostic_messages(result["diagnostics"])
+        render_summary(result["summary"])
         figure = plot_waveforms(result["time_points"], result["node_voltages"], "Transient Response")
         st.pyplot(figure)
-        st.json({"time_points": result["time_points"][:5], "node_voltages_preview": {k: v[:5] for k, v in result["node_voltages"].items()}})
+        preview_col, current_col = st.columns(2)
+        with preview_col:
+            render_series_preview("Waveform Preview", "time_s", result["time_points"], result["node_voltages"])
+        with current_col:
+            render_series_preview(
+                "Source Current Preview",
+                "time_s",
+                result["time_points"],
+                result["source_currents"],
+            )
+        with st.expander("Raw result data"):
+            st.json(result)
 
 
 def render_ac_tab(circuitsim_py):
@@ -198,9 +294,21 @@ def render_ac_tab(circuitsim_py):
         result = circuitsim_py.run_ac(netlist, frequencies)
         if result["diagnostics"]:
             render_diagnostic_messages(result["diagnostics"])
-        figure = plot_ac_magnitude(result["frequencies_hz"], result["node_voltages"], "AC Magnitude Response")
-        st.pyplot(figure)
-        st.json(result)
+        render_summary(result["summary"])
+        figure_columns = st.columns(2)
+        with figure_columns[0]:
+            figure = plot_ac_magnitude(result["frequencies_hz"], result["node_voltages"], "AC Magnitude Response")
+            st.pyplot(figure)
+        with figure_columns[1]:
+            phase_figure = plot_ac_phase(result["frequencies_hz"], result["node_voltages"], "AC Phase Response")
+            st.pyplot(phase_figure)
+        preview_col, current_col = st.columns(2)
+        with preview_col:
+            render_complex_series_preview("Voltage Response Table", result["frequencies_hz"], result["node_voltages"])
+        with current_col:
+            render_complex_series_preview("Source Current Table", result["frequencies_hz"], result["source_currents"])
+        with st.expander("Raw result data"):
+            st.json(result)
 
 
 def render_sweep_tab(circuitsim_py):
@@ -217,9 +325,11 @@ def render_sweep_tab(circuitsim_py):
         values = [float(value.strip()) for value in values_text.split(",") if value.strip()]
         if mode == "dc":
             results = []
+            summaries = []
             for value in values:
                 rendered = render_template(template_text, {parameter_name: value})
                 dc_result = circuitsim_py.run_dc(rendered)
+                summaries.append(dc_result["summary"])
                 results.append({"parameter": value, "node_voltage": dc_result["node_voltages"][observe_node]})
             figure = plot_sweep_curve(
                 values,
@@ -229,13 +339,17 @@ def render_sweep_tab(circuitsim_py):
                 "DC Sweep",
             )
             st.pyplot(figure)
+            if summaries:
+                render_summary(summaries[0])
             st.json(results)
         else:
             results = []
+            summaries = []
             figure, axis = plt.subplots(figsize=(8, 4.5))
             for value in values:
                 rendered = render_template(template_text, {parameter_name: value})
                 transient_result = circuitsim_py.run_transient(rendered, time_step, stop_time)
+                summaries.append(transient_result["summary"])
                 waveform = transient_result["node_voltages"][observe_node]
                 axis.plot(transient_result["time_points"], waveform, label=f"{parameter_name}={value:.6g}")
                 results.append({"parameter": value, "final_voltage": waveform[-1]})
@@ -246,6 +360,8 @@ def render_sweep_tab(circuitsim_py):
             axis.legend()
             figure.tight_layout()
             st.pyplot(figure)
+            if summaries:
+                render_summary(summaries[0])
             st.json(results)
 
 
@@ -305,6 +421,8 @@ def render_showcase_tab(circuitsim_py):
         waveform_axis.grid(True, linestyle="--", linewidth=0.5, alpha=0.6)
         waveform_axis.legend()
         waveform_figure.tight_layout()
+        if results:
+            render_summary(results[0]["summary"])
         st.pyplot(waveform_figure)
 
         delay_figure = plot_sweep_curve(
