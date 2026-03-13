@@ -1,158 +1,66 @@
 # CircuitSim
 
-CircuitSim is a software-first circuit simulation and design exploration platform for engineers working on chip-adjacent problems. The goal is to build something that is not just a basic circuit solver, but a small EDA-style workflow system: users can define circuits, simulate behavior, run parameter sweeps, diagnose failures, and explore tradeoffs through a Python automation layer.
+CircuitSim is a simulation-first circuit analysis project aimed at EDA, semiconductor, and systems software roles. It focuses on building a real circuit solver with a clean architecture, strong testing, and a Python-friendly workflow layer for design exploration.
 
-This project is designed to show strength in the kinds of problems that companies like Keysight, NVIDIA, and Qualcomm care about:
+## Goals
 
-- numerical methods and simulation
-- graph and netlist modeling
-- performance-conscious systems programming
-- Python tooling and workflow automation
-- developer-facing product design for technical users
+- Parse SPICE-like netlists into a validated circuit model
+- Simulate circuits with DC, transient, and later AC analysis
+- Expose the simulator through a scriptable automation layer
+- Add workflow features such as parameter sweeps and diagnostics
 
-## What The Project Does
+## Why This Project
 
-CircuitSim will simulate real circuits rather than mock them.
+CircuitSim is meant to demonstrate:
 
-Core capabilities:
+- numerical methods and matrix-based simulation
+- compiler-like parsing and validation
+- performance-conscious C++ design
+- Python interoperability for automation
+- engineering tooling for technical users
 
-- Parse a circuit netlist into an internal graph representation
-- Run DC operating point analysis
-- Run transient simulation over time
-- Run AC small-signal frequency sweeps
-- Support basic components such as resistors, capacitors, inductors, voltage sources, and current sources
-- Support reusable subcircuits
-- Visualize waveforms and compare simulation runs
+## Planned Scope
 
-On top of the simulator, CircuitSim adds a workflow layer inspired by EDA tools:
+Initial milestones:
 
-- Parameter sweeps for design space exploration
-- Python scripting for automation and optimization
-- Design-flow diagnostics for common setup and convergence issues
-- Run comparison tools to answer "what changed and why?"
-- Scenario management for different circuit configurations
+1. Netlist parser and circuit graph
+2. DC operating point solver
+3. Transient simulation for RC and RL circuits
+4. Python bindings for scripted experiments
+5. Parameter sweeps and diagnostics
 
-## Project Vision
+Stretch goals:
 
-The interesting part of this project is not only solving circuits. It is building a tool that helps users move from:
+- AC small-signal analysis
+- chip-focused RC or RLC interconnect studies
+- optimization-driven design exploration
+- waveform comparison and reporting tools
 
-1. writing a circuit
-2. running a simulation
-3. debugging a bad result
-4. sweeping parameters
-5. identifying a better design
+## Project Status
 
-That is why this project is more than a toy SPICE clone. It is meant to feel like a lightweight EDA workflow tool.
+The repository is in active early development. The current focus is building a solid parser and test harness before moving into solver work.
 
-## Example Use Case
+## Repository Layout
 
-One target use case is early exploration of chip-related electrical behavior without requiring hardware. For example, a user could model a simplified on-chip interconnect or power delivery network as an RC or RLC circuit and then:
+```text
+CircuitSim/
+  README.md
+  TASKS.md
+  CMakeLists.txt
+  include/
+  src/
+  tests/
+  examples/
+  docs/
+```
 
-- measure delay and settling time
-- observe ringing or voltage droop
-- study sensitivity to parasitics
-- compare multiple design choices
-- automate optimization from Python
+## Development Principles
 
-This keeps the project relevant to semiconductor software roles while staying fully accessible without lab experience.
+- Build in small, testable slices
+- Prefer correctness and diagnostics before optimization
+- Keep the core architecture clean and extensible
+- Add tests for both successful and failure cases
 
-## Why This Is A Strong Portfolio Project
+## Roadmap
 
-This project demonstrates several valuable engineering skills in one system:
-
-- building a parser and intermediate representation
-- implementing linear algebra and numerical simulation logic
-- designing extensible software architecture
-- exposing low-level functionality through a high-level Python API
-- creating usable tooling for engineers, not just algorithms
-
-It also creates strong interview discussion topics:
-
-- solver architecture and tradeoffs
-- convergence and numerical stability
-- performance bottlenecks
-- user experience for technical workflows
-- how to design software for experimentation and debugging
-
-## Planned Architecture
-
-### Simulation Core
-
-A performance-focused core, likely in C++ or another systems-friendly language, will handle:
-
-- netlist parsing
-- matrix assembly
-- circuit stamping
-- numerical solving
-- transient stepping
-
-### Automation Layer
-
-A Python layer will make the simulator easy to script for:
-
-- batch runs
-- parameter sweeps
-- optimization loops
-- dataset generation
-- analysis notebooks
-
-### Workflow Layer
-
-A higher-level product layer will help users work more effectively:
-
-- input validation
-- diagnostics and explanations
-- reusable experiment definitions
-- result comparison
-- plotting and reporting
-
-## Stretch Features
-
-If time allows, the most compelling advanced additions would be:
-
-- model fitting from measured CSV data
-- simple parasitic-aware interconnect modeling
-- optimization-guided parameter search
-- Monte Carlo variation analysis
-- interactive circuit editor or waveform dashboard
-
-## Development Priorities
-
-Recommended build order:
-
-1. Netlist parser and internal circuit graph
-2. DC solver
-3. Transient simulation
-4. Python API
-5. Parameter sweep framework
-6. Diagnostics and workflow tooling
-7. Visualization and polish
-
-## Relationship To "CircuitSim Flow"
-
-Yes, this is the same core idea as the earlier "CircuitSim Flow" concept, but refined.
-
-"CircuitSim Flow" was the broader pitch: a mini EDA workflow platform built around simulation, automation, and user design flows.
-
-This README describes the concrete version of that idea:
-
-- the foundation is a real circuit simulator
-- the differentiator is the workflow and automation layer on top
-
-So the simplest way to think about it is:
-
-CircuitSim Flow = the product vision  
-CircuitSim = the implementation of that vision as a simulation-first project
-
-## Current Status
-
-This repository is currently in the planning and architecture stage.
-
-The next milestone is to implement a minimal end-to-end path:
-
-- parse a small netlist
-- run a DC solve
-- simulate a simple RC transient
-- expose one scripted parameter sweep from Python
-
-Once that works, the project can grow into the workflow and tooling features that make it stand out.
+The detailed execution plan lives in [TASKS.md](TASKS.md).
