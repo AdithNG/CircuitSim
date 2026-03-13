@@ -146,6 +146,7 @@ CircuitDiagnostics analyze_circuit(const Circuit& circuit) {
     bool has_dc_path = false;
     for (const auto& component : circuit.components) {
         if (component.type == ComponentType::resistor ||
+            component.type == ComponentType::inductor ||
             component.type == ComponentType::current_source ||
             component.type == ComponentType::voltage_source) {
             has_dc_path = true;

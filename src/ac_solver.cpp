@@ -60,10 +60,6 @@ ACSolveResult ACSolver::solve(
 
     std::vector<const Component*> voltage_sources;
     for (const auto& component : circuit.components) {
-        if (component.type == ComponentType::inductor) {
-            add_error(result, "AC solver does not yet support inductors");
-            return result;
-        }
         if (component.type == ComponentType::voltage_source) {
             voltage_sources.push_back(&component);
             result.source_currents.emplace(component.id, std::vector<std::complex<double>>{});
@@ -134,6 +130,20 @@ ACSolveResult ACSolver::solve(
                     }
                     break;
                 }
+                case ComponentType::inductor: {
+                    const std::complex<double> admittance{0.0, -1.0 / (omega * component.value)};
+                    if (positive >= 0) {
+                        matrix[positive][positive] += admittance;
+                    }
+                    if (negative >= 0) {
+                        matrix[negative][negative] += admittance;
+                    }
+                    if (positive >= 0 && negative >= 0) {
+                        matrix[positive][negative] -= admittance;
+                        matrix[negative][positive] -= admittance;
+                    }
+                    break;
+                }
                 case ComponentType::current_source: {
                     const std::complex<double> current{component.value, 0.0};
                     if (positive >= 0) {
@@ -157,8 +167,6 @@ ACSolveResult ACSolver::solve(
                     rhs[index] += std::complex<double>{component.value, 0.0};
                     break;
                 }
-                case ComponentType::inductor:
-                    break;
             }
         }
 

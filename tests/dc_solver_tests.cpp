@@ -74,7 +74,7 @@ TEST_CASE(dc_solver_rejects_circuits_without_ground) {
     EXPECT_EQ(result.errors.size(), 1U);
 }
 
-TEST_CASE(dc_solver_rejects_unsupported_reactive_components) {
+TEST_CASE(dc_solver_handles_capacitor_with_dc_source) {
     const auto circuit = parse_or_fail(
         "V1 in 0 5\n"
         "C1 in 0 1u\n");
@@ -82,8 +82,39 @@ TEST_CASE(dc_solver_rejects_unsupported_reactive_components) {
     const DCSolver solver;
     const auto result = solver.solve(circuit);
 
-    EXPECT_FALSE(result.ok());
-    EXPECT_EQ(result.errors.size(), 1U);
+    EXPECT_TRUE(result.ok());
+    EXPECT_NEAR(result.node_voltages.at("in"), 5.0, 1e-9);
+    EXPECT_NEAR(result.source_currents.at("V1"), 0.0, 1e-12);
+}
+
+TEST_CASE(dc_solver_treats_capacitors_as_open_circuits) {
+    const auto circuit = parse_or_fail(
+        "V1 in 0 5\n"
+        "R1 in out 1k\n"
+        "C1 out 0 1u\n");
+
+    const DCSolver solver;
+    const auto result = solver.solve(circuit);
+
+    EXPECT_TRUE(result.ok());
+    EXPECT_NEAR(result.node_voltages.at("in"), 5.0, 1e-9);
+    EXPECT_NEAR(result.node_voltages.at("out"), 5.0, 1e-9);
+    EXPECT_NEAR(result.source_currents.at("V1"), 0.0, 1e-12);
+}
+
+TEST_CASE(dc_solver_treats_inductors_as_shorts) {
+    const auto circuit = parse_or_fail(
+        "V1 in 0 5\n"
+        "R1 in out 10\n"
+        "L1 out 0 1m\n");
+
+    const DCSolver solver;
+    const auto result = solver.solve(circuit);
+
+    EXPECT_TRUE(result.ok());
+    EXPECT_NEAR(result.node_voltages.at("in"), 5.0, 1e-9);
+    EXPECT_NEAR(result.node_voltages.at("out"), 0.0, 1e-9);
+    EXPECT_NEAR(result.source_currents.at("V1"), -0.5, 1e-9);
 }
 
 TEST_CASE(dc_solver_detects_singular_matrix) {

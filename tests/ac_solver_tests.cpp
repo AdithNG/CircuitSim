@@ -73,14 +73,33 @@ TEST_CASE(ac_solver_rejects_invalid_frequencies) {
     EXPECT_EQ(result.errors.size(), 1U);
 }
 
-TEST_CASE(ac_solver_rejects_inductors_for_now) {
+TEST_CASE(ac_solver_matches_rl_lowpass_cutoff_response) {
     const auto circuit = parse_ac_circuit(
         "V1 in 0 1\n"
-        "L1 in 0 1u\n");
+        "L1 in out 1m\n"
+        "R1 out 0 100\n");
 
     const ACSolver solver;
-    const auto result = solver.solve(circuit, {1e3});
+    const auto result = solver.solve(circuit, {15915.494309189535});
 
-    EXPECT_FALSE(result.ok());
-    EXPECT_EQ(result.errors.size(), 1U);
+    EXPECT_TRUE(result.ok());
+    EXPECT_EQ(result.frequencies_hz.size(), 1U);
+    EXPECT_NEAR(magnitude(result.node_voltages.at("out")[0]), std::sqrt(0.5), 1e-3);
+    EXPECT_NEAR(phase(result.node_voltages.at("out")[0]), -std::numbers::pi / 4.0, 1e-3);
+}
+
+TEST_CASE(ac_solver_shows_rl_lowpass_rolloff) {
+    const auto circuit = parse_ac_circuit(
+        "V1 in 0 1\n"
+        "L1 in out 1m\n"
+        "R1 out 0 100\n");
+
+    const ACSolver solver;
+    const auto result = solver.solve(circuit, {1e3, 1e6});
+
+    EXPECT_TRUE(result.ok());
+    const auto& out = result.node_voltages.at("out");
+    EXPECT_TRUE(magnitude(out[0]) > magnitude(out[1]));
+    EXPECT_TRUE(magnitude(out[0]) > 0.99);
+    EXPECT_TRUE(magnitude(out[1]) < 0.05);
 }

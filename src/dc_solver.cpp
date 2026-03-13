@@ -45,19 +45,20 @@ DCSolveResult DCSolver::solve(const Circuit& circuit) const {
     }
 
     std::vector<const Component*> voltage_sources;
+    std::vector<const Component*> inductors;
     for (const auto& component : circuit.components) {
-        if (component.type == ComponentType::capacitor || component.type == ComponentType::inductor) {
-            add_error(result, "DC solver does not yet support capacitors or inductors");
-            return result;
-        }
         if (component.type == ComponentType::voltage_source) {
             voltage_sources.push_back(&component);
+        }
+        if (component.type == ComponentType::inductor) {
+            inductors.push_back(&component);
         }
     }
 
     const std::size_t node_count = static_cast<std::size_t>(next_node_index);
     const std::size_t voltage_source_count = voltage_sources.size();
-    const std::size_t system_size = node_count + voltage_source_count;
+    const std::size_t inductor_count = inductors.size();
+    const std::size_t system_size = node_count + voltage_source_count + inductor_count;
 
     if (system_size == 0) {
         add_error(result, "circuit does not contain any solvable unknowns");
@@ -70,6 +71,10 @@ DCSolveResult DCSolver::solve(const Circuit& circuit) const {
     std::unordered_map<std::string, std::size_t> source_index;
     for (std::size_t index = 0; index < voltage_source_count; ++index) {
         source_index.emplace(voltage_sources[index]->id, node_count + index);
+    }
+    std::unordered_map<std::string, std::size_t> inductor_index;
+    for (std::size_t index = 0; index < inductor_count; ++index) {
+        inductor_index.emplace(inductors[index]->id, node_count + voltage_source_count + index);
     }
 
     const auto get_node_index = [&node_index](const std::string& node) -> int {
@@ -121,8 +126,22 @@ DCSolveResult DCSolver::solve(const Circuit& circuit) const {
                 break;
             }
             case ComponentType::capacitor:
-            case ComponentType::inductor:
+                // Ideal capacitors are open circuits in DC steady state.
                 break;
+            case ComponentType::inductor: {
+                // Ideal inductors are shorts in DC steady state, so stamp them
+                // like zero-volt sources to enforce equal node voltage.
+                const std::size_t index = inductor_index.at(component.id);
+                if (positive >= 0) {
+                    matrix[positive][index] += 1.0;
+                    matrix[index][positive] += 1.0;
+                }
+                if (negative >= 0) {
+                    matrix[negative][index] -= 1.0;
+                    matrix[index][negative] -= 1.0;
+                }
+                break;
+            }
         }
     }
 

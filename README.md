@@ -7,7 +7,7 @@ CircuitSim is a simulation-first circuit analysis and design exploration tool bu
 - SPICE-like netlist parsing and validation
 - DC operating point analysis
 - transient RC and RL simulation
-- AC small-signal analysis for linear RC circuits
+- AC small-signal analysis for linear RLC circuits
 - Python bindings for direct scripting
 - parameter sweeps with JSON export and plotting
 - topology diagnostics for common netlist issues
@@ -59,15 +59,14 @@ The app auto-detects the built Python extension by default.
 CircuitSim currently includes:
 
 - netlist parsing and validation
-- DC analysis for linear resistor, voltage-source, and current-source circuits
+- DC analysis with steady-state capacitor and inductor handling
 - transient analysis for RC and RL circuits
-- AC small-signal analysis for linear RC circuits
+- AC small-signal analysis for linear RLC circuits
 - Python bindings, plotting utilities, parameter sweeps, and diagnostics
 - a Streamlit workbench and a chip-focused interconnect showcase
 
 Areas still worth extending:
 
-- inductor support in DC and AC analysis
 - deeper convergence diagnostics
 - richer simulation summaries and metadata
 - performance profiling and optimization
