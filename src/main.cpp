@@ -4,7 +4,10 @@
 #include <iterator>
 #include <map>
 #include <string>
+#include <sstream>
+#include <vector>
 
+#include "circuitsim/ac_solver.h"
 #include "circuitsim/diagnostics.h"
 #include "circuitsim/dc_solver.h"
 #include "circuitsim/netlist_parser.h"
@@ -16,16 +19,18 @@ std::map<std::string, double> sort_scalars(const std::unordered_map<std::string,
     return std::map<std::string, double>(values.begin(), values.end());
 }
 
-std::map<std::string, std::vector<double>> sort_series(
-    const std::unordered_map<std::string, std::vector<double>>& values
+template <typename T>
+std::map<std::string, std::vector<T>> sort_series(
+    const std::unordered_map<std::string, std::vector<T>>& values
 ) {
-    return std::map<std::string, std::vector<double>>(values.begin(), values.end());
+    return std::map<std::string, std::vector<T>>(values.begin(), values.end());
 }
 
 void print_usage() {
     std::cerr << "Usage:\n";
     std::cerr << "  circuitsim_cli <netlist-file>\n";
     std::cerr << "  circuitsim_cli tran <netlist-file> <time-step> <stop-time>\n";
+    std::cerr << "  circuitsim_cli ac <netlist-file> <freq1[,freq2,...]>\n";
 }
 
 void print_diagnostics(const std::vector<circuitsim::DiagnosticMessage>& diagnostics) {
@@ -37,18 +42,31 @@ void print_diagnostics(const std::vector<circuitsim::DiagnosticMessage>& diagnos
     }
 }
 
+std::vector<double> parse_frequency_list(const std::string& text) {
+    std::vector<double> frequencies;
+    std::stringstream stream(text);
+    std::string item;
+    while (std::getline(stream, item, ',')) {
+        if (!item.empty()) {
+            frequencies.push_back(std::stod(item));
+        }
+    }
+    return frequencies;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
     const bool transient_mode = argc == 5 && std::string(argv[1]) == "tran";
+    const bool ac_mode = argc == 4 && std::string(argv[1]) == "ac";
     const bool dc_mode = argc == 2;
 
-    if (!dc_mode && !transient_mode) {
+    if (!dc_mode && !transient_mode && !ac_mode) {
         print_usage();
         return 1;
     }
 
-    const char* input_path = transient_mode ? argv[2] : argv[1];
+    const char* input_path = (transient_mode || ac_mode) ? argv[2] : argv[1];
     std::ifstream input(input_path, std::ios::binary);
     if (!input) {
         std::cerr << "Failed to open netlist file: " << input_path << '\n';
@@ -91,6 +109,33 @@ int main(int argc, char** argv) {
             std::cout << "Source currents:\n";
             for (const auto& [source, current] : sort_scalars(solve_result.source_currents)) {
                 std::cout << "  " << source << " = " << current << " A\n";
+            }
+        }
+        return 0;
+    }
+
+    if (ac_mode) {
+        const circuitsim::ACSolver solver;
+        const auto solve_result = solver.solve(parse_result.circuit, parse_frequency_list(argv[3]));
+        print_diagnostics(solve_result.diagnostics);
+        if (!solve_result.ok()) {
+            for (const auto& error : solve_result.errors) {
+                std::cerr << "Solve error: " << error.message << '\n';
+            }
+            return 1;
+        }
+
+        std::cout << std::fixed << std::setprecision(6);
+        std::cout << "frequency_hz,node,magnitude,phase_rad\n";
+        const auto sorted_nodes = sort_series(solve_result.node_voltages);
+        for (std::size_t freq_index = 0; freq_index < solve_result.frequencies_hz.size(); ++freq_index) {
+            for (const auto& [node, samples] : sorted_nodes) {
+                const auto value = samples[freq_index];
+                std::cout << solve_result.frequencies_hz[freq_index]
+                          << "," << node
+                          << "," << std::abs(value)
+                          << "," << std::arg(value)
+                          << '\n';
             }
         }
         return 0;

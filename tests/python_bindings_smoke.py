@@ -31,6 +31,14 @@ def main() -> int:
     if final_out < 4.9 or final_out > 5.01:
         raise SystemExit(f"unexpected transient final out voltage: {final_out}")
 
+    ac_result = circuitsim_py.run_ac(
+        "V1 in 0 1\nR1 in out 1k\nC1 out 0 1n\n",
+        [159154.94309189535],
+    )
+    ac_out = ac_result["node_voltages"]["out"][0]["magnitude"]
+    if abs(ac_out - (2 ** -0.5)) > 1e-3:
+        raise SystemExit(f"unexpected AC out magnitude: {ac_out}")
+
     parsed = circuitsim_py.parse_netlist("V1 in 0 5\nR1 in out 1k\nR2 out 0 2k\n")
     if parsed["nodes"] != ["in", "0", "out"]:
         raise SystemExit(f"unexpected node list: {parsed['nodes']}")

@@ -45,6 +45,7 @@ Implemented so far:
 - SPICE-like netlist parsing and validation
 - DC operating point solving for resistors, current sources, and voltage sources
 - transient simulation for resistor-capacitor circuits using backward Euler
+- AC small-signal analysis for linear RC circuits
 - a small CLI for running DC or transient analysis on a netlist file
 - Python bindings for parsing, DC analysis, and transient simulation
 - parameterized netlist sweeps with JSON export and comparison plotting
@@ -103,6 +104,12 @@ Transient example:
 ./build/Debug/circuitsim_cli tran examples/rc_charge.cir 1e-4 5e-3
 ```
 
+AC example:
+
+```bash
+./build/Debug/circuitsim_cli ac examples/ac_lowpass.cir 159154.94309189535
+```
+
 ## Plot A Transient Response
 
 ```bash
@@ -125,6 +132,9 @@ import circuitsim_py
 
 result = circuitsim_py.run_dc("V1 in 0 5\nR1 in out 1k\nR2 out 0 2k\n")
 print(result["node_voltages"]["out"])
+
+ac_result = circuitsim_py.run_ac("V1 in 0 1\nR1 in out 1k\nC1 out 0 1n\n", [159154.94309189535])
+print(ac_result["node_voltages"]["out"][0]["magnitude"])
 ```
 
 Diagnostics are also exposed through Python:
@@ -172,6 +182,19 @@ CircuitSim now performs a basic topology analysis before solving. The current di
 - floating nodes
 - components inside floating regions
 - reactive-only networks that are likely to fail in DC analysis
+
+## AC Analysis
+
+CircuitSim now supports frequency-domain small-signal analysis for linear RC circuits.
+
+The current AC solver supports:
+
+- resistors
+- capacitors
+- voltage sources
+- current sources
+
+The current AC solver does not yet support inductors.
 
 ## Chip Showcase
 

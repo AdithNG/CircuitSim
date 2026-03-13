@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 
+#include "circuitsim/ac_solver.h"
 #include "circuitsim/dc_solver.h"
 #include "circuitsim/diagnostics.h"
 #include "circuitsim/netlist_parser.h"
@@ -114,6 +115,54 @@ PYBIND11_MODULE(circuitsim_py, module) {
         data["diagnostics"] = diagnostics_to_list(result.diagnostics);
         data["node_voltages"] = result.node_voltages;
         data["source_currents"] = result.source_currents;
+        return data;
+    });
+
+    module.def("run_ac", [](const std::string& text, const std::vector<double>& frequencies_hz) {
+        const auto circuit = parse_or_throw(text);
+        const circuitsim::ACSolver solver;
+        const auto result = solver.solve(circuit, frequencies_hz);
+        if (!result.ok()) {
+            std::string message = "AC solve failed:";
+            for (const auto& error : result.errors) {
+                message += "\n" + error.message;
+            }
+            throw std::runtime_error(message);
+        }
+
+        py::dict node_voltages;
+        for (const auto& [node, values] : result.node_voltages) {
+            py::list samples;
+            for (const auto& value : values) {
+                py::dict sample;
+                sample["real"] = value.real();
+                sample["imag"] = value.imag();
+                sample["magnitude"] = std::abs(value);
+                sample["phase_rad"] = std::arg(value);
+                samples.append(sample);
+            }
+            node_voltages[node.c_str()] = samples;
+        }
+
+        py::dict source_currents;
+        for (const auto& [source, values] : result.source_currents) {
+            py::list samples;
+            for (const auto& value : values) {
+                py::dict sample;
+                sample["real"] = value.real();
+                sample["imag"] = value.imag();
+                sample["magnitude"] = std::abs(value);
+                sample["phase_rad"] = std::arg(value);
+                samples.append(sample);
+            }
+            source_currents[source.c_str()] = samples;
+        }
+
+        py::dict data;
+        data["diagnostics"] = diagnostics_to_list(result.diagnostics);
+        data["frequencies_hz"] = result.frequencies_hz;
+        data["node_voltages"] = node_voltages;
+        data["source_currents"] = source_currents;
         return data;
     });
 

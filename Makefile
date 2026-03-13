@@ -2,7 +2,7 @@ BUILD_DIR ?= build
 CONFIG ?= Debug
 PYTHON ?= python
 
-.PHONY: configure build test run-dc run-tran plot python-smoke sweep-dc showcase clean
+.PHONY: configure build test run-dc run-tran run-ac plot python-smoke sweep-dc showcase clean
 
 configure:
 	cmake -S . -B $(BUILD_DIR)
@@ -18,6 +18,9 @@ run-dc: build
 
 run-tran: build
 	$(BUILD_DIR)/Debug/circuitsim_cli tran examples/rc_charge.cir 1e-4 5e-3
+
+run-ac: build
+	$(BUILD_DIR)/Debug/circuitsim_cli ac examples/ac_lowpass.cir 159154.94309189535
 
 plot: build
 	$(PYTHON) python/plot_transient.py examples/rc_charge.cir 1e-4 5e-3 --output plots/rc_charge.png

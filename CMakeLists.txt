@@ -20,6 +20,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(CIRCUITSIM_BUILD_TESTS "Build CircuitSim tests" ON)
 
 add_library(circuitsim
+    src/ac_solver.cpp
     src/diagnostics.cpp
     src/dc_solver.cpp
     src/netlist_parser.cpp
@@ -72,6 +73,7 @@ if(CIRCUITSIM_BUILD_TESTS)
     enable_testing()
 
     add_executable(circuitsim_tests
+        tests/ac_solver_tests.cpp
         tests/diagnostics_tests.cpp
         tests/dc_solver_tests.cpp
         tests/test_main.cpp
@@ -91,7 +93,7 @@ if(CIRCUITSIM_BUILD_TESTS)
     add_test(NAME circuitsim_tests COMMAND circuitsim_tests)
     add_test(
         NAME circuitsim_cli_resistor_divider
-        COMMAND circuitsim_cli ${PROJECT_SOURCE_DIR}/examples/resistor_divider.cir
+        COMMAND $<TARGET_FILE:circuitsim_cli> ${PROJECT_SOURCE_DIR}/examples/resistor_divider.cir
     )
     set_tests_properties(
         circuitsim_cli_resistor_divider
@@ -100,12 +102,21 @@ if(CIRCUITSIM_BUILD_TESTS)
     )
     add_test(
         NAME circuitsim_cli_rc_charge
-        COMMAND circuitsim_cli tran ${PROJECT_SOURCE_DIR}/examples/rc_charge.cir 1e-4 5e-3
+        COMMAND $<TARGET_FILE:circuitsim_cli> tran ${PROJECT_SOURCE_DIR}/examples/rc_charge.cir 1e-4 5e-3
     )
     set_tests_properties(
         circuitsim_cli_rc_charge
         PROPERTIES
         PASS_REGULAR_EXPRESSION "0\\.005000,0\\.000000,5\\.000000,4\\."
+    )
+    add_test(
+        NAME circuitsim_cli_ac_lowpass
+        COMMAND $<TARGET_FILE:circuitsim_cli> ac ${PROJECT_SOURCE_DIR}/examples/ac_lowpass.cir 159154.94309189535
+    )
+    set_tests_properties(
+        circuitsim_cli_ac_lowpass
+        PROPERTIES
+        PASS_REGULAR_EXPRESSION "out,0\\.707107,-0\\.785398"
     )
     if(Python3_Interpreter_FOUND)
         add_test(
