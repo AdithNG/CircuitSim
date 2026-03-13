@@ -2,7 +2,7 @@ BUILD_DIR ?= build
 CONFIG ?= Debug
 PYTHON ?= python
 
-.PHONY: configure build test run-dc run-tran plot python-smoke sweep-dc clean
+.PHONY: configure build test run-dc run-tran plot python-smoke sweep-dc showcase clean
 
 configure:
 	cmake -S . -B $(BUILD_DIR)
@@ -27,6 +27,9 @@ python-smoke: build
 
 sweep-dc: build
 	$(PYTHON) python/sweep.py dc examples/resistor_divider_param.cir.in RLOAD 1000,2000,4000 --module-dir build/python --observe out --output-json build/dc_sweep.json --plot plots/dc_sweep.png
+
+showcase: build
+	$(PYTHON) python/chip_showcase.py --module-dir build/python
 
 clean:
 	cmake -E rm -rf $(BUILD_DIR)

@@ -1,0 +1,6 @@
+* Simplified on-chip interconnect model
+V1 driver 0 1
+RDRV driver line 50
+RWIRE line out {{RWIRE}}
+CLOAD out 0 2e-12
+.end

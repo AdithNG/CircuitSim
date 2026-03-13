@@ -49,6 +49,7 @@ Implemented so far:
 - Python bindings for parsing, DC analysis, and transient simulation
 - parameterized netlist sweeps with JSON export and comparison plotting
 - circuit diagnostics for missing ground, floating nodes, and reactive-only warnings
+- a chip-focused interconnect showcase with waveform and delay analysis
 - automated tests and CI
 
 ## Repository Layout
@@ -171,6 +172,30 @@ CircuitSim now performs a basic topology analysis before solving. The current di
 - floating nodes
 - components inside floating regions
 - reactive-only networks that are likely to fail in DC analysis
+
+## Chip Showcase
+
+CircuitSim includes a simplified on-chip interconnect study that sweeps wire resistance in an RC network and measures the 50% delay at the receiving node.
+
+Run it with:
+
+```bash
+python python/chip_showcase.py --module-dir build/python
+```
+
+Or with the `Makefile`:
+
+```bash
+make showcase
+```
+
+This produces:
+
+- `build/chip_showcase.json`
+- `plots/chip_showcase_waveforms.png`
+- `plots/chip_showcase_delay.png`
+
+The detailed write-up lives in [docs/chip_showcase.md](docs/chip_showcase.md).
 
 ## Roadmap
 
