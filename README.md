@@ -77,6 +77,19 @@ CircuitSim/
 - Keep the core architecture clean and extensible
 - Add tests for both successful and failure cases
 
+## Quick Start
+
+Launch the interactive UI:
+
+```bash
+python -m pip install -r requirements.txt
+cmake -S . -B build
+cmake --build build --config Debug
+make ui
+```
+
+The Streamlit workbench is the main demo entry point for the project.
+
 ## Build And Test
 
 ```bash
@@ -91,13 +104,6 @@ Or with the convenience `Makefile`:
 ```bash
 python -m pip install -r requirements.txt
 make test
-```
-
-Launch the interactive UI:
-
-```bash
-python -m pip install -r requirements.txt
-make ui
 ```
 
 ## Run The CLI

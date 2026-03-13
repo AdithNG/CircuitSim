@@ -143,8 +143,6 @@ def render_diagnostic_messages(messages: list[dict]):
 def guidance_for_messages(messages: list[dict]) -> list[str]:
     suggestions: list[str] = []
     codes = {message["code"] for message in messages}
-    if "missing-ground" in codes:
-        suggestions.append("Add a reference node named `0` or `GND` so the circuit has a valid ground.")
     if "floating-nodes" in codes:
         suggestions.append("Connect isolated nodes back to the grounded part of the circuit or remove the floating subnetwork.")
     if "reactive-only-network" in codes:
