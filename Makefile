@@ -35,7 +35,7 @@ showcase: build
 	$(PYTHON) python/chip_showcase.py --module-dir build/python
 
 ui: build
-	streamlit run python/app.py
+	$(PYTHON) -m streamlit run python/app.py
 
 clean:
 	cmake -E rm -rf $(BUILD_DIR)
