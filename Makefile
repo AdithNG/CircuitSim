@@ -2,7 +2,7 @@ BUILD_DIR ?= build
 CONFIG ?= Debug
 PYTHON ?= python
 
-.PHONY: configure build test run-dc run-tran run-ac plot python-smoke sweep-dc showcase clean
+.PHONY: configure build test run-dc run-tran run-ac plot python-smoke sweep-dc showcase ui clean
 
 configure:
 	cmake -S . -B $(BUILD_DIR)
@@ -33,6 +33,9 @@ sweep-dc: build
 
 showcase: build
 	$(PYTHON) python/chip_showcase.py --module-dir build/python
+
+ui: build
+	streamlit run python/app.py
 
 clean:
 	cmake -E rm -rf $(BUILD_DIR)

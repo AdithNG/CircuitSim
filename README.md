@@ -51,6 +51,7 @@ Implemented so far:
 - parameterized netlist sweeps with JSON export and comparison plotting
 - circuit diagnostics for missing ground, floating nodes, and reactive-only warnings
 - a chip-focused interconnect showcase with waveform and delay analysis
+- a lightweight Streamlit workbench for interactive demos
 - automated tests and CI
 
 ## Repository Layout
@@ -90,6 +91,13 @@ Or with the convenience `Makefile`:
 ```bash
 python -m pip install -r requirements.txt
 make test
+```
+
+Launch the interactive UI:
+
+```bash
+python -m pip install -r requirements.txt
+make ui
 ```
 
 ## Run The CLI
@@ -219,6 +227,19 @@ This produces:
 - `plots/chip_showcase_delay.png`
 
 The detailed write-up lives in [docs/chip_showcase.md](docs/chip_showcase.md).
+
+## Streamlit UI
+
+CircuitSim includes a Streamlit workbench in [python/app.py](python/app.py).
+
+It currently provides:
+
+- DC analysis
+- transient analysis
+- AC analysis
+- parameter sweeps
+- diagnostics
+- the chip-focused showcase
 
 ## Roadmap
 

@@ -173,5 +173,16 @@ if(CIRCUITSIM_BUILD_TESTS)
             PROPERTIES
             PASS_REGULAR_EXPRESSION "Chip showcase smoke test passed"
         )
+        add_test(
+            NAME circuitsim_ui_smoke
+            COMMAND
+                ${Python3_EXECUTABLE}
+                ${PROJECT_SOURCE_DIR}/tests/ui_smoke.py
+        )
+        set_tests_properties(
+            circuitsim_ui_smoke
+            PROPERTIES
+            PASS_REGULAR_EXPRESSION "UI smoke test passed"
+        )
     endif()
 endif()
