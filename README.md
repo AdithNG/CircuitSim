@@ -76,6 +76,7 @@ CircuitSim/
 ## Build And Test
 
 ```bash
+python -m pip install -r requirements.txt
 cmake -S . -B build
 cmake --build build --config Debug
 ctest --test-dir build -C Debug --output-on-failure
@@ -84,6 +85,7 @@ ctest --test-dir build -C Debug --output-on-failure
 Or with the convenience `Makefile`:
 
 ```bash
+python -m pip install -r requirements.txt
 make test
 ```
 
