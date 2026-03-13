@@ -54,9 +54,11 @@ Implemented so far:
 CircuitSim/
   README.md
   TASKS.md
+  Makefile
   CMakeLists.txt
   include/
   src/
+  python/
   tests/
   examples/
   docs/
@@ -77,6 +79,12 @@ cmake --build build --config Debug
 ctest --test-dir build -C Debug --output-on-failure
 ```
 
+Or with the convenience `Makefile`:
+
+```bash
+make test
+```
+
 ## Run The CLI
 
 ```bash
@@ -88,6 +96,14 @@ Transient example:
 ```bash
 ./build/Debug/circuitsim_cli tran examples/rc_charge.cir 1e-4 5e-3
 ```
+
+## Plot A Transient Response
+
+```bash
+python python/plot_transient.py examples/rc_charge.cir 1e-4 5e-3 --output plots/rc_charge.png --no-show
+```
+
+This uses `matplotlib` on top of the C++ CLI output, which gives us a fast path to visuals before we add deeper Python bindings or a richer UI.
 
 ## Roadmap
 

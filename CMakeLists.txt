@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.20)
 
 project(CircuitSim VERSION 0.1.0 LANGUAGES CXX)
 
+find_package(Python3 COMPONENTS Interpreter)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -77,4 +79,19 @@ if(CIRCUITSIM_BUILD_TESTS)
         PROPERTIES
         PASS_REGULAR_EXPRESSION "0\\.005000,0\\.000000,5\\.000000,4\\."
     )
+    if(Python3_Interpreter_FOUND)
+        add_test(
+            NAME circuitsim_plot_transient_smoke
+            COMMAND
+                ${Python3_EXECUTABLE}
+                ${PROJECT_SOURCE_DIR}/tests/plot_transient_smoke.py
+                --cli
+                $<TARGET_FILE:circuitsim_cli>
+        )
+        set_tests_properties(
+            circuitsim_plot_transient_smoke
+            PROPERTIES
+            PASS_REGULAR_EXPRESSION "Wrote plot to"
+        )
+    endif()
 endif()
