@@ -79,12 +79,11 @@ def apply_theme():
         }
 
         [data-testid="stSidebar"] {
-            background: linear-gradient(180deg, #16324f, #184e63);
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            display: none;
         }
 
-        [data-testid="stSidebar"] * {
-            color: #f8fafc;
+        [data-testid="collapsedControl"] {
+            display: none;
         }
 
         .hero-shell {
@@ -478,18 +477,6 @@ def render_complex_series_preview(
     st.dataframe(rows, use_container_width=True, hide_index=True)
 
 
-def render_sidebar() -> tuple[object, str]:
-    st.sidebar.title("CircuitSim")
-    module_dir = str(discover_module_dir())
-    if module_dir not in sys.path:
-        sys.path.insert(0, module_dir)
-    circuitsim_py = get_circuitsim_module(module_dir)
-    st.sidebar.caption("Backed by the C++ simulation core via pybind11.")
-    with st.sidebar.expander("Advanced"):
-        st.code(module_dir)
-    return circuitsim_py, module_dir
-
-
 def render_dc_tab(circuitsim_py):
     st.subheader("DC Analysis")
     st.caption("Inspect steady-state node voltages and source currents for grounded linear circuits.")
@@ -704,7 +691,7 @@ def render_showcase_tab(circuitsim_py):
 
 
 def main():
-    st.set_page_config(page_title="CircuitSim UI", layout="wide")
+    st.set_page_config(page_title="CircuitSim UI", layout="wide", initial_sidebar_state="collapsed")
     apply_theme()
     render_intro(
         "Circuit Simulation That Feels Like A Workbench",
@@ -712,7 +699,10 @@ def main():
         ["C++ Core", "Python Automation", "DC / Transient / AC", "EDA Workflow"],
     )
 
-    circuitsim_py, _module_dir = render_sidebar()
+    module_dir = str(discover_module_dir())
+    if module_dir not in sys.path:
+        sys.path.insert(0, module_dir)
+    circuitsim_py = get_circuitsim_module(module_dir)
 
     tabs = st.tabs(["DC", "Transient", "AC", "Sweep", "Diagnostics", "Chip Showcase"])
     with tabs[0]:
