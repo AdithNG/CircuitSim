@@ -37,6 +37,30 @@ def apply_theme():
             background: linear-gradient(180deg, var(--cs-bg), var(--cs-bg-soft));
         }
 
+        header[data-testid="stHeader"] {
+            display: none;
+        }
+
+        [data-testid="stToolbar"] {
+            display: none;
+        }
+
+        [data-testid="stDecoration"] {
+            display: none;
+        }
+
+        [data-testid="stStatusWidget"] {
+            display: none;
+        }
+
+        #MainMenu {
+            visibility: hidden;
+        }
+
+        footer {
+            visibility: hidden;
+        }
+
         html, body, [class*="css"] {
             font-family: "Source Sans 3", "Segoe UI", sans-serif;
             color: var(--cs-ink);
