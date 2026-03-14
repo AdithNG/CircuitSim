@@ -54,7 +54,8 @@ Available views:
 - chip showcase
 
 The app auto-detects the built Python extension by default and surfaces run summaries,
-node/source tables, transient waveform previews, and AC magnitude/phase plots.
+node/source tables, transient waveform previews, AC magnitude/phase plots, and a
+more polished engineering-workbench UI.
 
 ## Current Coverage
 

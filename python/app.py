@@ -13,6 +13,177 @@ from sweep import load_module, render_template
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILD_PYTHON = ROOT / "build" / "python"
+PLOT_COLORS = ["#0f766e", "#f97316", "#2563eb", "#be123c", "#7c3aed", "#65a30d"]
+
+
+def apply_theme():
+    st.markdown(
+        """
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Source+Sans+3:wght@400;600&display=swap');
+
+        :root {
+            --cs-ink: #14213d;
+            --cs-muted: #52607a;
+            --cs-panel: rgba(255, 255, 255, 0.78);
+            --cs-line: rgba(15, 23, 42, 0.10);
+            --cs-accent: #0f766e;
+            --cs-accent-soft: rgba(15, 118, 110, 0.10);
+            --cs-warm: #f97316;
+            --cs-bg-a: #f7f4ea;
+            --cs-bg-b: #edf6f9;
+        }
+
+        .stApp {
+            background:
+                radial-gradient(circle at top left, rgba(249, 115, 22, 0.10), transparent 28%),
+                radial-gradient(circle at top right, rgba(15, 118, 110, 0.14), transparent 32%),
+                linear-gradient(180deg, var(--cs-bg-a), var(--cs-bg-b));
+        }
+
+        html, body, [class*="css"] {
+            font-family: "Source Sans 3", "Segoe UI", sans-serif;
+            color: var(--cs-ink);
+        }
+
+        h1, h2, h3, .hero-title {
+            font-family: "Space Grotesk", "Avenir Next", sans-serif;
+            letter-spacing: -0.02em;
+            color: var(--cs-ink);
+        }
+
+        .block-container {
+            padding-top: 2.2rem;
+            padding-bottom: 2.5rem;
+        }
+
+        [data-testid="stSidebar"] {
+            background: linear-gradient(180deg, rgba(20, 33, 61, 0.96), rgba(15, 118, 110, 0.92));
+            border-right: 1px solid rgba(255, 255, 255, 0.10);
+        }
+
+        [data-testid="stSidebar"] * {
+            color: #f8fafc;
+        }
+
+        .hero-shell {
+            padding: 1.4rem 1.5rem;
+            border: 1px solid var(--cs-line);
+            border-radius: 1.4rem;
+            background: linear-gradient(135deg, rgba(255,255,255,0.82), rgba(255,255,255,0.64));
+            box-shadow: 0 18px 40px rgba(20, 33, 61, 0.08);
+            margin-bottom: 1.2rem;
+        }
+
+        .hero-kicker {
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--cs-accent);
+        }
+
+        .hero-title {
+            font-size: 2.45rem;
+            line-height: 1.02;
+            margin: 0.25rem 0 0.45rem 0;
+        }
+
+        .hero-copy {
+            max-width: 56rem;
+            color: var(--cs-muted);
+            font-size: 1.03rem;
+            line-height: 1.5;
+            margin-bottom: 0.9rem;
+        }
+
+        .hero-pills {
+            display: flex;
+            gap: 0.55rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-pill {
+            background: var(--cs-accent-soft);
+            border: 1px solid rgba(15, 118, 110, 0.18);
+            color: var(--cs-accent);
+            border-radius: 999px;
+            padding: 0.28rem 0.75rem;
+            font-size: 0.87rem;
+            font-weight: 600;
+        }
+
+        .section-lead {
+            color: var(--cs-muted);
+            margin-top: -0.2rem;
+            margin-bottom: 0.9rem;
+        }
+
+        .diag-card {
+            border: 1px solid var(--cs-line);
+            border-left-width: 5px;
+            border-radius: 1rem;
+            padding: 0.75rem 0.95rem;
+            margin-bottom: 0.6rem;
+            background: rgba(255, 255, 255, 0.76);
+        }
+
+        .diag-card.error {
+            border-left-color: #be123c;
+        }
+
+        .diag-card.warning {
+            border-left-color: #d97706;
+        }
+
+        .diag-title {
+            font-weight: 700;
+            margin-bottom: 0.1rem;
+        }
+
+        .diag-body {
+            color: var(--cs-muted);
+        }
+
+        [data-baseweb="tab-list"] {
+            gap: 0.35rem;
+        }
+
+        [data-baseweb="tab"] {
+            border-radius: 999px;
+            padding: 0.45rem 0.9rem;
+            background: rgba(255,255,255,0.62);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+        }
+
+        button[kind="primary"] {
+            border-radius: 999px;
+        }
+
+        [data-testid="stMetric"] {
+            background: rgba(255,255,255,0.74);
+            border: 1px solid var(--cs-line);
+            border-radius: 1rem;
+            padding: 0.65rem 0.8rem;
+            box-shadow: 0 10px 30px rgba(20, 33, 61, 0.05);
+        }
+
+        [data-testid="stDataFrame"], [data-testid="stExpander"] {
+            background: rgba(255,255,255,0.72);
+            border-radius: 1rem;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def apply_plot_style(axis):
+    axis.set_facecolor("#fffdf9")
+    axis.grid(True, linestyle="--", linewidth=0.7, alpha=0.35, color="#64748b")
+    for spine in axis.spines.values():
+        spine.set_color("#cbd5e1")
+    axis.tick_params(colors="#334155")
 
 
 def available_netlists() -> dict[str, Path]:
@@ -58,12 +229,14 @@ def get_circuitsim_module(module_dir: str):
 
 def plot_waveforms(time_points: list[float], node_series: dict[str, list[float]], title: str):
     figure, axis = plt.subplots(figsize=(8, 4.5))
-    for node_name, values in sorted(node_series.items()):
+    for index, (node_name, values) in enumerate(sorted(node_series.items())):
+        color = PLOT_COLORS[index % len(PLOT_COLORS)]
         axis.plot(time_points, values, label=node_name)
+        axis.lines[-1].set_color(color)
     axis.set_title(title)
     axis.set_xlabel("Time (s)")
     axis.set_ylabel("Voltage (V)")
-    axis.grid(True, linestyle="--", linewidth=0.5, alpha=0.6)
+    apply_plot_style(axis)
     axis.legend()
     figure.tight_layout()
     return figure
@@ -71,13 +244,14 @@ def plot_waveforms(time_points: list[float], node_series: dict[str, list[float]]
 
 def plot_ac_magnitude(frequencies: list[float], node_series: dict[str, list[dict]], title: str):
     figure, axis = plt.subplots(figsize=(8, 4.5))
-    for node_name, samples in sorted(node_series.items()):
+    for index, (node_name, samples) in enumerate(sorted(node_series.items())):
+        color = PLOT_COLORS[index % len(PLOT_COLORS)]
         magnitudes = [sample["magnitude"] for sample in samples]
-        axis.semilogx(frequencies, magnitudes, label=node_name)
+        axis.semilogx(frequencies, magnitudes, label=node_name, color=color, linewidth=2.2)
     axis.set_title(title)
     axis.set_xlabel("Frequency (Hz)")
     axis.set_ylabel("Magnitude")
-    axis.grid(True, which="both", linestyle="--", linewidth=0.5, alpha=0.6)
+    apply_plot_style(axis)
     axis.legend()
     figure.tight_layout()
     return figure
@@ -85,13 +259,14 @@ def plot_ac_magnitude(frequencies: list[float], node_series: dict[str, list[dict
 
 def plot_ac_phase(frequencies: list[float], node_series: dict[str, list[dict]], title: str):
     figure, axis = plt.subplots(figsize=(8, 4.5))
-    for node_name, samples in sorted(node_series.items()):
+    for index, (node_name, samples) in enumerate(sorted(node_series.items())):
+        color = PLOT_COLORS[index % len(PLOT_COLORS)]
         phases = [sample["phase_rad"] for sample in samples]
-        axis.semilogx(frequencies, phases, label=node_name)
+        axis.semilogx(frequencies, phases, label=node_name, color=color, linewidth=2.2)
     axis.set_title(title)
     axis.set_xlabel("Frequency (Hz)")
     axis.set_ylabel("Phase (rad)")
-    axis.grid(True, which="both", linestyle="--", linewidth=0.5, alpha=0.6)
+    apply_plot_style(axis)
     axis.legend()
     figure.tight_layout()
     return figure
@@ -99,11 +274,11 @@ def plot_ac_phase(frequencies: list[float], node_series: dict[str, list[dict]], 
 
 def plot_sweep_curve(x_values: list[float], y_values: list[float], x_label: str, y_label: str, title: str):
     figure, axis = plt.subplots(figsize=(7, 4.2))
-    axis.plot(x_values, y_values, marker="o")
+    axis.plot(x_values, y_values, marker="o", color=PLOT_COLORS[0], linewidth=2.2, markersize=7)
     axis.set_title(title)
     axis.set_xlabel(x_label)
     axis.set_ylabel(y_label)
-    axis.grid(True, linestyle="--", linewidth=0.5, alpha=0.6)
+    apply_plot_style(axis)
     figure.tight_layout()
     return figure
 
@@ -133,6 +308,25 @@ def format_diagnostic_title(message: dict) -> str:
     return f"{code}"
 
 
+def render_intro(title: str, description: str, pills: list[str] | None = None):
+    pill_markup = ""
+    if pills:
+        pill_markup = '<div class="hero-pills">' + "".join(
+            f'<span class="hero-pill">{pill}</span>' for pill in pills
+        ) + "</div>"
+    st.markdown(
+        f"""
+        <div class="hero-shell">
+            <div class="hero-kicker">CircuitSim</div>
+            <div class="hero-title">{title}</div>
+            <div class="hero-copy">{description}</div>
+            {pill_markup}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def render_diagnostic_messages(messages: list[dict]):
     if not messages:
         st.success("No diagnostics to report.")
@@ -149,7 +343,16 @@ def render_diagnostic_messages(messages: list[dict]):
     st.markdown("**Issues**")
     for message in messages:
         title = format_diagnostic_title(message)
-        st.markdown(f"- **{title}**: {message['message']}")
+        severity = message["severity"]
+        st.markdown(
+            f"""
+            <div class="diag-card {severity}">
+                <div class="diag-title">{title}</div>
+                <div class="diag-body">{message['message']}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     with st.expander("Raw diagnostic data"):
         st.json(messages)
@@ -191,6 +394,13 @@ def render_scalar_results(title: str, values: dict[str, float], unit: str):
         return
     st.markdown(f"**{title}**")
     rows = [{"name": name, "value": value, "unit": unit} for name, value in sorted(values.items())]
+    st.dataframe(rows, use_container_width=True, hide_index=True)
+
+
+def render_results_table(title: str, rows: list[dict]):
+    if not rows:
+        return
+    st.markdown(f"**{title}**")
     st.dataframe(rows, use_container_width=True, hide_index=True)
 
 
@@ -241,6 +451,7 @@ def render_sidebar() -> tuple[object, str]:
 
 def render_dc_tab(circuitsim_py):
     st.subheader("DC Analysis")
+    st.caption("Inspect steady-state node voltages and source currents for grounded linear circuits.")
     example_name = st.selectbox("DC example", list(available_netlists().keys()), key="dc_example")
     netlist = st.text_area("Netlist", load_example_text(available_netlists()[example_name]), height=160, key="dc_text")
     if st.button("Run DC", key="run_dc"):
@@ -259,6 +470,7 @@ def render_dc_tab(circuitsim_py):
 
 def render_transient_tab(circuitsim_py):
     st.subheader("Transient Analysis")
+    st.caption("Follow voltages and currents over time for RC and RL responses.")
     default_text = load_example_text(ROOT / "examples" / "rc_charge.cir")
     netlist = st.text_area("Netlist", default_text, height=160, key="tran_text")
     time_step = st.number_input("Time step", value=1e-4, format="%.6e")
@@ -286,6 +498,7 @@ def render_transient_tab(circuitsim_py):
 
 def render_ac_tab(circuitsim_py):
     st.subheader("AC Analysis")
+    st.caption("Study frequency response with both magnitude and phase in one place.")
     default_text = load_example_text(ROOT / "examples" / "ac_lowpass.cir")
     netlist = st.text_area("Netlist", default_text, height=160, key="ac_text")
     frequency_text = st.text_input("Frequencies (comma-separated Hz)", "1e3,1e4,1e5,1.5915494309189535e5,1e6")
@@ -313,6 +526,7 @@ def render_ac_tab(circuitsim_py):
 
 def render_sweep_tab(circuitsim_py):
     st.subheader("Parameter Sweep")
+    st.caption("Run small design-space experiments by varying one parameter across multiple simulations.")
     template_name = st.selectbox("Template", list(available_templates().keys()), key="sweep_template")
     template_text = st.text_area("Template", load_example_text(available_templates()[template_name]), height=160, key="sweep_text")
     parameter_name = st.text_input("Parameter name", "RLOAD")
@@ -341,7 +555,7 @@ def render_sweep_tab(circuitsim_py):
             st.pyplot(figure)
             if summaries:
                 render_summary(summaries[0])
-            st.json(results)
+            render_results_table("Sweep Results", results)
         else:
             results = []
             summaries = []
@@ -362,11 +576,12 @@ def render_sweep_tab(circuitsim_py):
             st.pyplot(figure)
             if summaries:
                 render_summary(summaries[0])
-            st.json(results)
+            render_results_table("Sweep Results", results)
 
 
 def render_diagnostics_tab(circuitsim_py):
     st.subheader("Diagnostics")
+    st.caption("Catch missing ground references, floating subgraphs, and other analysis blockers early.")
     if "diag_text" not in st.session_state:
         st.session_state["diag_text"] = "V1 a 0 5\nR1 a b 1k\nR2 b 0 2k\n"
 
@@ -395,6 +610,7 @@ def render_diagnostics_tab(circuitsim_py):
 
 def render_showcase_tab(circuitsim_py):
     st.subheader("Chip Showcase")
+    st.caption("Explore how wire resistance changes delay in a simplified on-chip interconnect model.")
     template_text = st.text_area(
         "Interconnect template",
         load_example_text(ROOT / "examples" / "on_chip_interconnect.cir.in"),
@@ -433,13 +649,27 @@ def render_showcase_tab(circuitsim_py):
             "Interconnect Delay vs Resistance",
         )
         st.pyplot(delay_figure)
-        st.json(results)
+        render_results_table(
+            "Showcase Results",
+            [
+                {
+                    "wire_resistance_ohm": item["wire_resistance"],
+                    "delay_50pct_ps": item["delay_50pct"] * 1e12,
+                    "final_voltage_v": item["final_voltage"],
+                }
+                for item in results
+            ],
+        )
 
 
 def main():
     st.set_page_config(page_title="CircuitSim UI", layout="wide")
-    st.title("CircuitSim Workbench")
-    st.caption("Interactive front-end for the C++ simulation core, Python bindings, and workflow tooling.")
+    apply_theme()
+    render_intro(
+        "Circuit Simulation That Feels Like A Workbench",
+        "CircuitSim combines a C++ solver core with Python automation and a visual Streamlit front-end for exploring design behavior, debugging netlists, and running small EDA-style experiments.",
+        ["C++ Core", "Python Automation", "DC / Transient / AC", "EDA Workflow"],
+    )
 
     circuitsim_py, _module_dir = render_sidebar()
 
