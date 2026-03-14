@@ -434,14 +434,14 @@ def render_scalar_results(title: str, values: dict[str, float], unit: str):
         return
     st.markdown(f"**{title}**")
     rows = [{"name": name, "value": value, "unit": unit} for name, value in sorted(values.items())]
-    st.dataframe(rows, use_container_width=True, hide_index=True)
+    st.dataframe(rows, width="stretch", hide_index=True)
 
 
 def render_results_table(title: str, rows: list[dict]):
     if not rows:
         return
     st.markdown(f"**{title}**")
-    st.dataframe(rows, use_container_width=True, hide_index=True)
+    st.dataframe(rows, width="stretch", hide_index=True)
 
 
 def render_series_preview(title: str, x_label: str, x_values: list[float], series: dict[str, list[float]]):
@@ -453,7 +453,7 @@ def render_series_preview(title: str, x_label: str, x_values: list[float], serie
         for node_name, values in sorted(series.items()):
             row[node_name] = values[index]
         rows.append(row)
-    st.dataframe(rows, use_container_width=True, hide_index=True)
+    st.dataframe(rows, width="stretch", hide_index=True)
 
 
 def render_complex_series_preview(
@@ -474,7 +474,7 @@ def render_complex_series_preview(
                     "phase_rad": sample["phase_rad"],
                 }
             )
-    st.dataframe(rows, use_container_width=True, hide_index=True)
+    st.dataframe(rows, width="stretch", hide_index=True)
 
 
 def render_dc_tab(circuitsim_py):
