@@ -25,20 +25,16 @@ def apply_theme():
         :root {
             --cs-ink: #14213d;
             --cs-muted: #52607a;
-            --cs-panel: rgba(255, 255, 255, 0.78);
+            --cs-panel: rgba(255, 255, 255, 0.94);
             --cs-line: rgba(15, 23, 42, 0.10);
             --cs-accent: #0f766e;
             --cs-accent-soft: rgba(15, 118, 110, 0.10);
-            --cs-warm: #f97316;
-            --cs-bg-a: #f7f4ea;
-            --cs-bg-b: #edf6f9;
+            --cs-bg: #f6f8fb;
+            --cs-bg-soft: #eef4f6;
         }
 
         .stApp {
-            background:
-                radial-gradient(circle at top left, rgba(249, 115, 22, 0.10), transparent 28%),
-                radial-gradient(circle at top right, rgba(15, 118, 110, 0.14), transparent 32%),
-                linear-gradient(180deg, var(--cs-bg-a), var(--cs-bg-b));
+            background: linear-gradient(180deg, var(--cs-bg), var(--cs-bg-soft));
         }
 
         html, body, [class*="css"] {
@@ -53,13 +49,14 @@ def apply_theme():
         }
 
         .block-container {
-            padding-top: 2.2rem;
-            padding-bottom: 2.5rem;
+            padding-top: 1.4rem;
+            padding-bottom: 2rem;
+            max-width: 1180px;
         }
 
         [data-testid="stSidebar"] {
-            background: linear-gradient(180deg, rgba(20, 33, 61, 0.96), rgba(15, 118, 110, 0.92));
-            border-right: 1px solid rgba(255, 255, 255, 0.10);
+            background: linear-gradient(180deg, #16324f, #184e63);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         [data-testid="stSidebar"] * {
@@ -67,12 +64,12 @@ def apply_theme():
         }
 
         .hero-shell {
-            padding: 1.4rem 1.5rem;
+            padding: 1rem 1.15rem;
             border: 1px solid var(--cs-line);
-            border-radius: 1.4rem;
-            background: linear-gradient(135deg, rgba(255,255,255,0.82), rgba(255,255,255,0.64));
-            box-shadow: 0 18px 40px rgba(20, 33, 61, 0.08);
-            margin-bottom: 1.2rem;
+            border-radius: 1rem;
+            background: var(--cs-panel);
+            box-shadow: 0 10px 28px rgba(20, 33, 61, 0.05);
+            margin-bottom: 0.9rem;
         }
 
         .hero-kicker {
@@ -84,17 +81,17 @@ def apply_theme():
         }
 
         .hero-title {
-            font-size: 2.45rem;
-            line-height: 1.02;
-            margin: 0.25rem 0 0.45rem 0;
+            font-size: 1.95rem;
+            line-height: 1.08;
+            margin: 0.2rem 0 0.35rem 0;
         }
 
         .hero-copy {
-            max-width: 56rem;
+            max-width: 48rem;
             color: var(--cs-muted);
-            font-size: 1.03rem;
-            line-height: 1.5;
-            margin-bottom: 0.9rem;
+            font-size: 0.98rem;
+            line-height: 1.45;
+            margin-bottom: 0.65rem;
         }
 
         .hero-pills {
@@ -108,8 +105,8 @@ def apply_theme():
             border: 1px solid rgba(15, 118, 110, 0.18);
             color: var(--cs-accent);
             border-radius: 999px;
-            padding: 0.28rem 0.75rem;
-            font-size: 0.87rem;
+            padding: 0.24rem 0.62rem;
+            font-size: 0.8rem;
             font-weight: 600;
         }
 
@@ -122,10 +119,10 @@ def apply_theme():
         .diag-card {
             border: 1px solid var(--cs-line);
             border-left-width: 5px;
-            border-radius: 1rem;
-            padding: 0.75rem 0.95rem;
-            margin-bottom: 0.6rem;
-            background: rgba(255, 255, 255, 0.76);
+            border-radius: 0.85rem;
+            padding: 0.68rem 0.82rem;
+            margin-bottom: 0.55rem;
+            background: rgba(255, 255, 255, 0.96);
         }
 
         .diag-card.error {
@@ -150,27 +147,47 @@ def apply_theme():
         }
 
         [data-baseweb="tab"] {
-            border-radius: 999px;
-            padding: 0.45rem 0.9rem;
-            background: rgba(255,255,255,0.62);
+            border-radius: 0.9rem 0.9rem 0 0;
+            padding: 0.42rem 0.82rem;
+            background: rgba(255,255,255,0.82);
             border: 1px solid rgba(15, 23, 42, 0.08);
         }
 
+        [aria-selected="true"][data-baseweb="tab"] {
+            background: rgba(255,255,255,0.98);
+            border-bottom-color: rgba(255,255,255,0.98);
+            color: var(--cs-accent);
+        }
+
         button[kind="primary"] {
-            border-radius: 999px;
+            border-radius: 0.8rem;
         }
 
         [data-testid="stMetric"] {
-            background: rgba(255,255,255,0.74);
+            background: rgba(255,255,255,0.96);
             border: 1px solid var(--cs-line);
-            border-radius: 1rem;
-            padding: 0.65rem 0.8rem;
-            box-shadow: 0 10px 30px rgba(20, 33, 61, 0.05);
+            border-radius: 0.9rem;
+            padding: 0.6rem 0.75rem;
+            box-shadow: 0 8px 20px rgba(20, 33, 61, 0.04);
         }
 
         [data-testid="stDataFrame"], [data-testid="stExpander"] {
-            background: rgba(255,255,255,0.72);
-            border-radius: 1rem;
+            background: rgba(255,255,255,0.96);
+            border-radius: 0.9rem;
+        }
+
+        .stTextArea textarea, .stTextInput input, .stNumberInput input {
+            background: rgba(255,255,255,0.96);
+        }
+
+        @media (max-width: 900px) {
+            .hero-title {
+                font-size: 1.5rem;
+            }
+
+            .block-container {
+                padding-top: 1rem;
+            }
         }
         </style>
         """,
